@@ -12,7 +12,7 @@ const connection = new Connection(endpoint, "confirmed");
 const transactionService = new TransactionService(connection);
 const transactionController = new TransactionController(transactionService);
 
-app.get("/transaction", transactionController.splitPay);
+app.get("/transaction", transactionController.splitPay.bind(transactionController));
 
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);

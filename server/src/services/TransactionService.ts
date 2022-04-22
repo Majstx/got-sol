@@ -11,7 +11,7 @@ const operator = Keypair.generate();
 export class TransactionService {
   constructor(private readonly connection: Connection) {}
 
-  async splitPay(): Promise<Transaction> {
+  async splitPay(amount: number): Promise<Transaction> {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
     const tx = new Transaction({
@@ -19,9 +19,19 @@ export class TransactionService {
       recentBlockhash: blockhash,
     });
 
+    const splitterAmount = amount * PAYMENT_FEE * SPLITTER_SHARE
+    const devAmount = amount * PAYMENT_FEE * DEV_SHARE
+    const opAmount = amount * PAYMENT_FEE * OPERATOR_SHARE
+    const finalAmount = amount - (2 * splitterAmount) - (2 * devAmount) - opAmount
+
+    this.transferTo(tx, splitterAmount)
+
+    tx.partialSign(operator)
+    return tx;
+  }
+
+  private transferTo(tx: Transaction, amount: number) {
     // const ix = createTransferCheckedInstruction()
     // tx.add(ix)
-
-    return tx;
   }
 }
