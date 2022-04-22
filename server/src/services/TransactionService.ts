@@ -17,7 +17,7 @@ const operator = Keypair.generate();
 export class TransactionService {
   constructor(private readonly connection: Connection) {}
 
-  async splitPay(amount: number): Promise<Transaction> {
+  async createSplitPayTx(amount: number): Promise<Transaction> {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
     const tx = new Transaction({

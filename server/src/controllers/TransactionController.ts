@@ -7,7 +7,7 @@ export class TransactionController {
   async splitPay(req: Request, res: Response, next: NextFunction) {
     try {
       const amount = 10
-      const tx = await this.transactionService.splitPay(amount);
+      const tx = await this.transactionService.createSplitPayTx(amount);
 
       res.json({
         transaction: tx.serialize().toString("base64"),
