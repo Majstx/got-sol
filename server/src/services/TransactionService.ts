@@ -12,12 +12,24 @@ type TokenInfo = {
   decimals: number;
 };
 
+export type SplitPayDetailsDto = {
+  amount: number;
+  merchantAddress: PublicKey;
+};
+
 const operator = Keypair.generate();
+const splitterA = Keypair.generate();
+const splitterB = Keypair.generate();
+const devA = Keypair.generate();
+const devB = Keypair.generate();
 
 export class TransactionService {
   constructor(private readonly connection: Connection) {}
 
-  async createSplitPayTx(amount: number): Promise<Transaction> {
+  async createSplitPayTx({
+    amount,
+    merchantAddress,
+  }: SplitPayDetailsDto): Promise<Transaction> {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
     const tx = new Transaction({
@@ -34,6 +46,11 @@ export class TransactionService {
     const finalAmount = foo - 2 * splitterAmount - 2 * devAmount - opAmount;
 
     this.transferTo(tx, token, operator.publicKey, opAmount);
+    this.transferTo(tx, token, splitterA.publicKey, splitterAmount);
+    this.transferTo(tx, token, splitterB.publicKey, splitterAmount);
+    this.transferTo(tx, token, devA.publicKey, devAmount);
+    this.transferTo(tx, token, devB.publicKey, devAmount);
+    this.transferTo(tx, token, merchantAddress, finalAmount);
 
     tx.partialSign(operator);
     return tx;
