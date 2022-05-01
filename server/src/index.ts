@@ -2,6 +2,8 @@ import { Cluster, clusterApiUrl, Connection } from "@solana/web3.js";
 import { TransactionController } from "./controllers/TransactionController";
 import { TransactionService } from "./services/TransactionService";
 
+require('dotenv').config()
+
 const express = require("express");
 
 const app = express();
