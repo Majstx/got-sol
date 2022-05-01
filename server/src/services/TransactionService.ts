@@ -45,11 +45,11 @@ export class TransactionService {
     const opAmount = Math.floor(foo * PAYMENT_FEE * OPERATOR_SHARE);
     const finalAmount = foo - 2 * splitterAmount - 2 * devAmount - opAmount;
 
-    this.transferTo(tx, token, operator.publicKey, opAmount);
-    this.transferTo(tx, token, splitterA.publicKey, splitterAmount);
-    this.transferTo(tx, token, splitterB.publicKey, splitterAmount);
-    this.transferTo(tx, token, devA.publicKey, devAmount);
-    this.transferTo(tx, token, devB.publicKey, devAmount);
+    // this.transferTo(tx, token, operator.publicKey, opAmount);
+    // this.transferTo(tx, token, splitterA.publicKey, splitterAmount);
+    // this.transferTo(tx, token, splitterB.publicKey, splitterAmount);
+    // this.transferTo(tx, token, devA.publicKey, devAmount);
+    // this.transferTo(tx, token, devB.publicKey, devAmount);
     this.transferTo(tx, token, merchantAddress, finalAmount);
 
     tx.partialSign(operator);
