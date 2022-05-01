@@ -5,6 +5,7 @@ import {
 } from "../services/TransactionService";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { Config } from "../config";
+import tokenList, { TokenList } from "../tokens";
 
 const serializationConfig = {
   verifySignatures: false,
@@ -12,10 +13,19 @@ const serializationConfig = {
 };
 
 export class TransactionController {
+  private readonly tokens: TokenList;
+
   constructor(
     private readonly config: Config,
     private readonly transactionService: TransactionService
-  ) {}
+  ) {
+    this.tokens = tokenList[config.solanaCluster];
+    if (!this.tokens) {
+      throw new Error(
+        `token list not found for cluster ${config.solanaCluster}`
+      );
+    }
+  }
 
   meta(req: Request) {
     const label = req.query.label || "transaction";
@@ -45,10 +55,13 @@ export class TransactionController {
     if (typeof accountField !== "string") throw new Error("invalid account");
     const account = new PublicKey(accountField);
 
+    const token = this.tokens.USDC; // TODO: fetch from query
+
     const paymentRequest: SplitPayDetailsDto = {
       amount,
       from: account,
       merchant: recipient,
+      token,
     };
     let tx = await this.transactionService.createSplitPayTx(paymentRequest);
 

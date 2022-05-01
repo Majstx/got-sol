@@ -1,6 +1,6 @@
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { createTransferCheckedInstruction } from "@solana/spl-token";
-import { devnet } from "../tokens";
+import { TokenDetails } from "../tokens";
 
 const PAYMENT_FEE = 0.01;
 const SPLITTER_SHARE = 0.4;
@@ -16,6 +16,7 @@ export type SplitPayDetailsDto = {
   amount: number;
   from: PublicKey;
   merchant: PublicKey;
+  token: TokenDetails;
 };
 
 export class TransactionService {
@@ -28,6 +29,7 @@ export class TransactionService {
     amount,
     merchant,
     from,
+    token,
   }: SplitPayDetailsDto): Promise<Transaction> {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
@@ -35,8 +37,6 @@ export class TransactionService {
       feePayer: this.operator.publicKey,
       recentBlockhash: blockhash,
     });
-
-    const token = devnet.USDC;
 
     const foo = amount * Math.pow(10, token.decimals);
     // const splitterAmount = Math.floor(foo * PAYMENT_FEE * SPLITTER_SHARE);

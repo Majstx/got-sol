@@ -14,7 +14,7 @@ const bodyParser = require("body-parser");
 const config: Config = {
   port: process.env.PORT || 3000,
   appUrl: process.env.GOT_SOL_APP_URL,
-  solanaCluster: process.env.GOT_SOL_SOLANA_CLUSTER,
+  solanaCluster: process.env.GOT_SOL_SOLANA_CLUSTER as Cluster,
   operatorSecretKey: process.env.GOT_SOL_OPERATOR_SECRET_KEY,
 };
 
@@ -30,7 +30,7 @@ const app = express();
 app.use(bodyParser());
 app.use(compression());
 
-const endpoint = clusterApiUrl(config.solanaCluster as Cluster);
+const endpoint = clusterApiUrl(config.solanaCluster);
 const connection = new Connection(endpoint, "confirmed");
 const operator = Keypair.fromSecretKey(bs58.decode(config.operatorSecretKey));
 const transactionService = new TransactionService(connection, operator);
