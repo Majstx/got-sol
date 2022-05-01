@@ -14,7 +14,7 @@ export class TransactionController {
 
   meta(req: Request, res: Response) {
     const label = req.query.label || "transaction";
-    const icon = this.config.appUrl + "/logo";
+    const icon = `https://${req.headers.host}/logo`;
 
     res.json({
       label,
