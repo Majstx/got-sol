@@ -15,10 +15,10 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
-// const PAYMENT_FEE = 0.01;
-// const SPLITTER_SHARE = 0.4;
-// const DEV_SHARE = 0.05;
-// const OPERATOR_SHARE = 0.1;
+const PAYMENT_FEE = 0.01;
+const SPLITTER_SHARE = 0.4;
+const DEV_SHARE = 0.05;
+const OPERATOR_SHARE = 0.1;
 
 export type SplitPayDetailsDto = {
   amount: number;
@@ -52,21 +52,25 @@ export class TransactionService {
     const tokens = amount * Math.pow(10, mint.decimals);
     if (tokens > senderAccount.amount) throw new Error("insufficient funds");
 
-    // const splitterAmount = Math.floor(foo * PAYMENT_FEE * SPLITTER_SHARE);
-    // const devAmount = Math.floor(foo * PAYMENT_FEE * DEV_SHARE);
-    // const opAmount = Math.floor(foo * PAYMENT_FEE * OPERATOR_SHARE);
-    // const finalAmount = foo - 2 * splitterAmount - 2 * devAmount - opAmount;
+    const fee = Math.floor(tokens * PAYMENT_FEE);
+    const splitterAmount = Math.floor(fee * SPLITTER_SHARE);
+    const devAmount = Math.floor(fee * DEV_SHARE);
+    const opAmount = Math.floor(fee * OPERATOR_SHARE);
+    const finalAmount = tokens - 2 * splitterAmount - 2 * devAmount - opAmount;
 
-    const ix = await this.transferTo(
-      splToken,
-      sender,
-      senderATA,
-      recipient,
-      tokens,
-      mint.decimals
-    );
+    const splits = await Promise.all([
+      this.transferTo(
+        splToken,
+        sender,
+        senderATA,
+        recipient,
+        finalAmount,
+        mint.decimals
+      ),
+    ]);
+    const instructions = splits.reduce((arr, ix) => arr.concat(ix));
 
-    return this.createTransaction(ix);
+    return this.createTransaction(instructions);
   }
 
   private async transferTo(
