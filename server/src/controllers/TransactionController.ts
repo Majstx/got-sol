@@ -4,11 +4,24 @@ import {
   TransactionService,
 } from "../services/TransactionService";
 import { Keypair } from "@solana/web3.js";
+import { Config } from "../config";
 
 const merchant = Keypair.generate();
 
 export class TransactionController {
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(
+    private readonly config: Config,
+    private readonly transactionService: TransactionService
+  ) {}
+
+  meta(req: Request, res: Response) {
+    const icon = this.config.appUrl + "/logo";
+
+    res.json({
+      label: "tx label",
+      icon,
+    });
+  }
 
   async splitPay(req: Request, res: Response, next: NextFunction) {
     try {
