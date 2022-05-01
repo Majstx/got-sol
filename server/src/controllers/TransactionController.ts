@@ -3,10 +3,8 @@ import {
   SplitPayDetailsDto,
   TransactionService,
 } from "../services/TransactionService";
-import { Keypair } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import { Config } from "../config";
-
-const merchant = Keypair.generate();
 
 export class TransactionController {
   constructor(
@@ -26,18 +24,40 @@ export class TransactionController {
 
   async splitPay(req: Request, res: Response, next: NextFunction) {
     try {
+      const amountField = req.query.amount;
+      if (!amountField) throw new Error("missing amount");
+      if (typeof amountField !== "string") throw new Error("invalid amount");
+      const amount = Number(amountField);
+
+      // Account provided in the transaction request body by the wallet.
+      const accountField = req.body?.account;
+      if (!accountField) throw new Error("missing account");
+      if (typeof accountField !== "string") throw new Error("invalid account");
+      const merchantAddress = new PublicKey(accountField);
+
       const paymentRequest: SplitPayDetailsDto = {
-        amount: 10,
-        merchantAddress: merchant.publicKey,
+        amount,
+        merchantAddress,
       };
-      const tx = await this.transactionService.createSplitPayTx(paymentRequest);
+      let tx = await this.transactionService.createSplitPayTx(paymentRequest);
+
+      // Serialize and deserialize the transaction. This ensures consistent ordering of the account keys for signing.
+      tx = Transaction.from(
+        tx.serialize({
+          verifySignatures: false,
+          requireAllSignatures: false,
+        })
+      );
+
+      // Serialize and return the unsigned transaction.
       const serialized = tx.serialize({
         verifySignatures: false,
         requireAllSignatures: false,
       });
+      const base64 = serialized.toString("base64");
 
       res.json({
-        transaction: serialized.toString("base64"),
+        transaction: base64,
       });
     } catch (e) {
       next(e);
