@@ -6,6 +6,11 @@ import {
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { Config } from "../config";
 
+let serializationConfig = {
+  verifySignatures: false,
+  requireAllSignatures: false,
+};
+
 export class TransactionController {
   constructor(
     private readonly config: Config,
@@ -42,18 +47,10 @@ export class TransactionController {
       let tx = await this.transactionService.createSplitPayTx(paymentRequest);
 
       // Serialize and deserialize the transaction. This ensures consistent ordering of the account keys for signing.
-      tx = Transaction.from(
-        tx.serialize({
-          verifySignatures: false,
-          requireAllSignatures: false,
-        })
-      );
+      tx = Transaction.from(tx.serialize(serializationConfig));
 
       // Serialize and return the unsigned transaction.
-      const serialized = tx.serialize({
-        verifySignatures: false,
-        requireAllSignatures: false,
-      });
+      const serialized = tx.serialize(serializationConfig);
       const base64 = serialized.toString("base64");
 
       res.json({
