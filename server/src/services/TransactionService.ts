@@ -2,20 +2,16 @@ import {
   Connection,
   Keypair,
   PublicKey,
-  SystemProgram,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import {
   Account,
-  ACCOUNT_SIZE,
-  createInitializeAccountInstruction,
+  createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress,
-  getMinimumBalanceForRentExemptAccount,
   getMint,
-  NATIVE_MINT,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
@@ -32,8 +28,6 @@ export type SplitPayDetailsDto = {
 };
 
 export class TransactionService {
-  private rent: number;
-
   constructor(
     private readonly connection: Connection,
     private readonly operator: Keypair
@@ -90,7 +84,11 @@ export class TransactionService {
       recipient
     );
     if (!recipientAccount) {
-      instructions = await this.createTokenAccount(recipient, amount);
+      instructions = await this.createTokenAccount(
+        splToken,
+        recipient,
+        recipientATA
+      );
     }
 
     return instructions.concat(
@@ -140,28 +138,18 @@ export class TransactionService {
   }
 
   private async createTokenAccount(
+    splToken: PublicKey,
     owner: PublicKey,
-    amount: number
+    ata: PublicKey
   ): Promise<TransactionInstruction[]> {
-    const account = Keypair.generate();
-    const rent = await this.getRent();
-
     return [
-      SystemProgram.createAccount({
-        fromPubkey: owner,
-        newAccountPubkey: account.publicKey,
-        space: ACCOUNT_SIZE,
-        lamports: rent + amount,
-        programId: TOKEN_PROGRAM_ID,
-      }),
-      createInitializeAccountInstruction(account.publicKey, NATIVE_MINT, owner),
+      createAssociatedTokenAccountInstruction(
+        this.operator.publicKey,
+        ata,
+        owner,
+        splToken,
+        TOKEN_PROGRAM_ID
+      ),
     ];
-  }
-
-  private async getRent(): Promise<number> {
-    if (!this.rent) {
-      this.rent = await getMinimumBalanceForRentExemptAccount(this.connection);
-    }
-    return this.rent;
   }
 }
