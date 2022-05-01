@@ -7,6 +7,7 @@ import { Config } from "./config";
 require("dotenv").config();
 
 const express = require("express");
+const compression = require("compression");
 
 const config: Config = {
   port: process.env.PORT || 3000,
@@ -15,6 +16,7 @@ const config: Config = {
 };
 
 const app = express();
+app.use(compression());
 
 const endpoint = clusterApiUrl(config.solanaCluster as Cluster);
 const connection = new Connection(endpoint, "confirmed");
