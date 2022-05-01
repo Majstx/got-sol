@@ -28,6 +28,8 @@ export class TransactionController {
   }
 
   async splitPay(req: Request) {
+    console.log(new Date(), { ...req.query, ...req.body });
+
     // TODO: validate input
     const paymentRequest: SplitPayDetailsDto = {
       amount: Number(req.query.amount),
