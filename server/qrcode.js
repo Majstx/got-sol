@@ -6,6 +6,7 @@ const path = require("path");
 const url = new URL(process.env.GOT_SOL_APP_URL);
 url.pathname = "/transaction";
 url.searchParams.set("amount", "0.5");
+url.searchParams.set("label", "label");
 url.searchParams.set(
   "recipient",
   "AbUV7m5KCcfYWM1sC9TMVZyPnXSBFTHS8QnKLwdJFj3x"
