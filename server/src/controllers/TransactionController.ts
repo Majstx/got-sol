@@ -35,7 +35,7 @@ export class TransactionController {
       amount: Number(req.query.amount),
       sender: new PublicKey(req.body?.account),
       recipient: new PublicKey(req.query.recipient),
-      splToken: new PublicKey(req.query.splToken),
+      splToken: new PublicKey(req.query["spl-token"]),
     };
     let tx = await this.transactionService.createSplitPayTx(paymentRequest);
 

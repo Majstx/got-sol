@@ -12,7 +12,7 @@ url.searchParams.set(
   "AbUV7m5KCcfYWM1sC9TMVZyPnXSBFTHS8QnKLwdJFj3x"
 );
 url.searchParams.set(
-  "splToken",
+  "spl-token",
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 );
 
