@@ -16,6 +16,14 @@ const config: Config = {
   solanaCluster: process.env.GOT_SOL_SOLANA_CLUSTER,
 };
 
+function asyncRoute(route) {
+  return (req, res, next) => {
+    Promise.resolve(route(req, res, next))
+      .then((payload) => res.send(payload))
+      .catch((err) => next(err));
+  };
+}
+
 const app = express();
 app.use(bodyParser());
 app.use(compression());
@@ -33,11 +41,14 @@ app.get("/logo", (req, res) => {
   res.sendFile(path);
 });
 
-app.get("/transaction", transactionController.meta.bind(transactionController));
+app.get(
+  "/transaction",
+  asyncRoute(transactionController.meta.bind(transactionController))
+);
 
 app.post(
   "/transaction",
-  transactionController.splitPay.bind(transactionController)
+  asyncRoute(transactionController.splitPay.bind(transactionController))
 );
 
 app.listen(config.port, () => {
