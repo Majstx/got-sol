@@ -15,10 +15,11 @@ export class TransactionController {
   ) {}
 
   meta(req: Request, res: Response) {
+    const label = req.query.label || "transaction";
     const icon = this.config.appUrl + "/logo";
 
     res.json({
-      label: "tx label",
+      label,
       icon,
     });
   }
