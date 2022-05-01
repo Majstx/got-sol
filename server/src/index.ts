@@ -1,8 +1,9 @@
-import { Cluster, clusterApiUrl, Connection } from "@solana/web3.js";
+import { Cluster, clusterApiUrl, Connection, Keypair } from "@solana/web3.js";
 import { join } from "path";
 import { TransactionController } from "./controllers/TransactionController";
 import { TransactionService } from "./services/TransactionService";
 import { Config } from "./config";
+import bs58 from "bs58";
 
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ const config: Config = {
   port: process.env.PORT || 3000,
   appUrl: process.env.GOT_SOL_APP_URL,
   solanaCluster: process.env.GOT_SOL_SOLANA_CLUSTER,
+  operatorSecretKey: process.env.GOT_SOL_OPERATOR_SECRET_KEY,
 };
 
 function asyncRoute(route) {
@@ -30,7 +32,8 @@ app.use(compression());
 
 const endpoint = clusterApiUrl(config.solanaCluster as Cluster);
 const connection = new Connection(endpoint, "confirmed");
-const transactionService = new TransactionService(connection);
+const operator = Keypair.fromSecretKey(bs58.decode(config.operatorSecretKey));
+const transactionService = new TransactionService(connection, operator);
 const transactionController = new TransactionController(
   config,
   transactionService

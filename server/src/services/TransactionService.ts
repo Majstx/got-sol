@@ -14,61 +14,54 @@ type TokenInfo = {
 
 export type SplitPayDetailsDto = {
   amount: number;
-  merchantAddress: PublicKey;
+  from: PublicKey;
+  merchant: PublicKey;
 };
 
-const operator = Keypair.generate();
-const splitterA = Keypair.generate();
-const splitterB = Keypair.generate();
-const devA = Keypair.generate();
-const devB = Keypair.generate();
-
 export class TransactionService {
-  constructor(private readonly connection: Connection) {}
+  constructor(
+    private readonly connection: Connection,
+    private readonly operator: Keypair
+  ) {}
 
   async createSplitPayTx({
     amount,
-    merchantAddress,
+    merchant,
+    from,
   }: SplitPayDetailsDto): Promise<Transaction> {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
     const tx = new Transaction({
-      feePayer: operator.publicKey,
+      feePayer: this.operator.publicKey,
       recentBlockhash: blockhash,
     });
 
     const token = devnet.USDC;
 
     const foo = amount * Math.pow(10, token.decimals);
-    const splitterAmount = Math.floor(foo * PAYMENT_FEE * SPLITTER_SHARE);
-    const devAmount = Math.floor(foo * PAYMENT_FEE * DEV_SHARE);
-    const opAmount = Math.floor(foo * PAYMENT_FEE * OPERATOR_SHARE);
-    const finalAmount = foo - 2 * splitterAmount - 2 * devAmount - opAmount;
+    // const splitterAmount = Math.floor(foo * PAYMENT_FEE * SPLITTER_SHARE);
+    // const devAmount = Math.floor(foo * PAYMENT_FEE * DEV_SHARE);
+    // const opAmount = Math.floor(foo * PAYMENT_FEE * OPERATOR_SHARE);
+    // const finalAmount = foo - 2 * splitterAmount - 2 * devAmount - opAmount;
 
-    // this.transferTo(tx, token, operator.publicKey, opAmount);
-    // this.transferTo(tx, token, splitterA.publicKey, splitterAmount);
-    // this.transferTo(tx, token, splitterB.publicKey, splitterAmount);
-    // this.transferTo(tx, token, devA.publicKey, devAmount);
-    // this.transferTo(tx, token, devB.publicKey, devAmount);
-    this.transferTo(tx, token, merchantAddress, finalAmount);
+    this.transferTo(tx, token, from, merchant, foo);
 
-    tx.partialSign(operator);
+    tx.partialSign(this.operator);
     return tx;
   }
 
   private transferTo(
     tx: Transaction,
     token: TokenInfo,
-    destination: PublicKey,
+    from: PublicKey,
+    to: PublicKey,
     amount: number
   ) {
-    const from = Keypair.generate();
-
     const ix = createTransferCheckedInstruction(
-      from.publicKey,
+      from,
       token.mint,
-      destination,
-      from.publicKey,
+      to,
+      from,
       amount,
       token.decimals
     );

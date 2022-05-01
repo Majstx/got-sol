@@ -33,15 +33,22 @@ export class TransactionController {
     if (typeof amountField !== "string") throw new Error("invalid amount");
     const amount = Number(amountField);
 
+    const recipientField = req.query.recipient;
+    if (!recipientField) throw new Error("missing recipient");
+    if (typeof recipientField !== "string")
+      throw new Error("invalid recipient");
+    const recipient = new PublicKey(recipientField);
+
     // Account provided in the transaction request body by the wallet.
     const accountField = req.body?.account;
     if (!accountField) throw new Error("missing account");
     if (typeof accountField !== "string") throw new Error("invalid account");
-    const merchantAddress = new PublicKey(accountField);
+    const account = new PublicKey(accountField);
 
     const paymentRequest: SplitPayDetailsDto = {
       amount,
-      merchantAddress,
+      from: account,
+      merchant: recipient,
     };
     let tx = await this.transactionService.createSplitPayTx(paymentRequest);
 
