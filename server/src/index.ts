@@ -8,6 +8,7 @@ require("dotenv").config();
 
 const express = require("express");
 const compression = require("compression");
+const bodyParser = require("body-parser");
 
 const config: Config = {
   port: process.env.PORT || 3000,
@@ -16,6 +17,7 @@ const config: Config = {
 };
 
 const app = express();
+app.use(bodyParser());
 app.use(compression());
 
 const endpoint = clusterApiUrl(config.solanaCluster as Cluster);
