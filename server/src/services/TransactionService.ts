@@ -9,11 +9,13 @@ import {
 import {
   Account,
   ACCOUNT_SIZE,
+  createInitializeAccountInstruction,
   createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptAccount,
   getMint,
+  NATIVE_MINT,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
@@ -81,15 +83,14 @@ export class TransactionService {
     amount: number,
     decimals: number
   ): Promise<TransactionInstruction[]> {
-    const instructions = [];
+    let instructions: TransactionInstruction[] = [];
 
     const [recipientATA, recipientAccount] = await this.getSplAddresses(
       splToken,
       recipient
     );
     if (!recipientAccount) {
-      const createAccountIx = await this.createTokenAccount(recipient, amount);
-      instructions.push(createAccountIx);
+      instructions = await this.createTokenAccount(recipient, amount);
     }
 
     return instructions.concat(
@@ -141,17 +142,20 @@ export class TransactionService {
   private async createTokenAccount(
     owner: PublicKey,
     amount: number
-  ): Promise<TransactionInstruction> {
+  ): Promise<TransactionInstruction[]> {
     const account = Keypair.generate();
     const rent = await this.getRent();
 
-    return SystemProgram.createAccount({
-      fromPubkey: owner,
-      newAccountPubkey: account.publicKey,
-      space: ACCOUNT_SIZE,
-      lamports: rent + amount,
-      programId: TOKEN_PROGRAM_ID,
-    });
+    return [
+      SystemProgram.createAccount({
+        fromPubkey: owner,
+        newAccountPubkey: account.publicKey,
+        space: ACCOUNT_SIZE,
+        lamports: rent + amount,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      createInitializeAccountInstruction(account.publicKey, NATIVE_MINT, owner),
+    ];
   }
 
   private async getRent(): Promise<number> {
