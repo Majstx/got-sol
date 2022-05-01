@@ -77,17 +77,15 @@ export class TransactionService {
     amount: number,
     decimals: number
   ): Promise<TransactionInstruction[]> {
-    let instructions: TransactionInstruction[] = [];
+    const instructions: TransactionInstruction[] = [];
 
     const [recipientATA, recipientAccount] = await this.getSplAddresses(
       splToken,
       recipient
     );
     if (!recipientAccount) {
-      instructions = await this.createTokenAccount(
-        splToken,
-        recipient,
-        recipientATA
+      instructions.push(
+        this.createTokenAccount(splToken, recipient, recipientATA)
       );
     }
 
@@ -137,19 +135,17 @@ export class TransactionService {
     return tx;
   }
 
-  private async createTokenAccount(
+  private createTokenAccount(
     splToken: PublicKey,
     owner: PublicKey,
     ata: PublicKey
-  ): Promise<TransactionInstruction[]> {
-    return [
-      createAssociatedTokenAccountInstruction(
-        this.operator.publicKey,
-        ata,
-        owner,
-        splToken,
-        TOKEN_PROGRAM_ID
-      ),
-    ];
+  ): TransactionInstruction {
+    return createAssociatedTokenAccountInstruction(
+      this.operator.publicKey,
+      ata,
+      owner,
+      splToken,
+      TOKEN_PROGRAM_ID
+    );
   }
 }
