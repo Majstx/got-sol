@@ -18,4 +18,7 @@ url.searchParams.set(
 const content = "solana:" + encodeURIComponent(url.toString());
 const filePath = path.join(__dirname, "qrcode.png");
 
+console.log(url.toString());
+console.log(content);
+
 qr.toFile(filePath, content);
