@@ -4,6 +4,7 @@ import { TransactionController } from "./controllers/TransactionController";
 import { TransactionService } from "./services/TransactionService";
 import { Config } from "./config";
 import bs58 from "bs58";
+import { SplUtils } from "./services/SplUtils";
 
 require("dotenv").config();
 
@@ -30,10 +31,16 @@ const app = express();
 app.use(bodyParser());
 app.use(compression());
 
+const operator = Keypair.fromSecretKey(bs58.decode(config.operatorSecretKey));
+
 const endpoint = clusterApiUrl(config.solanaCluster);
 const connection = new Connection(endpoint, "confirmed");
-const operator = Keypair.fromSecretKey(bs58.decode(config.operatorSecretKey));
-const transactionService = new TransactionService(connection, operator);
+const splUtils = new SplUtils(connection);
+const transactionService = new TransactionService(
+  connection,
+  splUtils,
+  operator
+);
 const transactionController = new TransactionController(
   config,
   transactionService
