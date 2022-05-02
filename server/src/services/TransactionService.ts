@@ -9,6 +9,14 @@ import { getMint } from "@solana/spl-token";
 import { SplitPaymentBuilder } from "./SplitPaymentBuilder";
 import { SplUtils } from "./SplUtils";
 
+type Splitters = {
+  operator: PublicKey;
+  splitterA: PublicKey;
+  splitterB: PublicKey;
+  devA: PublicKey;
+  devB: PublicKey;
+};
+
 export type SplitPayDetailsDto = {
   amount: number;
   sender: PublicKey;
@@ -20,7 +28,8 @@ export class TransactionService {
   constructor(
     private readonly connection: Connection,
     private readonly splUtils: SplUtils,
-    private readonly operator: Keypair
+    private readonly feePayer: Keypair,
+    private readonly splitters: Splitters
   ) {}
 
   async createSplitPayTx({
@@ -37,15 +46,15 @@ export class TransactionService {
 
     const instructions = await SplitPaymentBuilder.init(this.splUtils, tokens)
       .setSplToken(splToken)
-      .setFeePayer(this.operator.publicKey)
+      .setFeePayer(this.feePayer.publicKey)
       .setSender(sender)
       .setDecimals(mint.decimals)
       .addMerchant(recipient)
-      .addDev(recipient)
-      .addDev(recipient)
-      .addSplitter(recipient)
-      .addSplitter(recipient)
-      .addOperator(this.operator.publicKey)
+      .addDev(this.splitters.devA)
+      .addDev(this.splitters.devB)
+      .addSplitter(this.splitters.splitterA)
+      .addSplitter(this.splitters.splitterB)
+      .addOperator(this.splitters.operator)
       .build();
 
     return this.createTransaction(instructions);
@@ -57,11 +66,11 @@ export class TransactionService {
     const { blockhash } = await this.connection.getLatestBlockhash("finalized");
 
     const tx = new Transaction({
-      feePayer: this.operator.publicKey,
+      feePayer: this.feePayer.publicKey,
       recentBlockhash: blockhash,
     });
     instructions.forEach((ix) => tx.add(ix));
-    tx.partialSign(this.operator);
+    tx.partialSign(this.feePayer);
 
     return tx;
   }

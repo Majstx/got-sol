@@ -1,4 +1,10 @@
-import { Cluster, clusterApiUrl, Connection, Keypair } from "@solana/web3.js";
+import {
+  Cluster,
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  PublicKey,
+} from "@solana/web3.js";
 import { join } from "path";
 import { TransactionController } from "./controllers/TransactionController";
 import { TransactionService } from "./services/TransactionService";
@@ -16,7 +22,6 @@ const config: Config = {
   port: process.env.PORT || 3000,
   appUrl: process.env.GOT_SOL_APP_URL,
   solanaCluster: process.env.GOT_SOL_SOLANA_CLUSTER as Cluster,
-  operatorSecretKey: process.env.GOT_SOL_OPERATOR_SECRET_KEY,
 };
 
 function asyncRoute(route) {
@@ -31,7 +36,17 @@ const app = express();
 app.use(bodyParser());
 app.use(compression());
 
-const operator = Keypair.fromSecretKey(bs58.decode(config.operatorSecretKey));
+const operator = Keypair.fromSecretKey(
+  bs58.decode(process.env.GOT_SOL_OPERATOR_SECRET_KEY)
+);
+
+const splitters = {
+  operator: operator.publicKey,
+  splitterA: new PublicKey(process.env.GOT_SOL_SPLITTER_A_PUBLIC_KEY),
+  splitterB: new PublicKey(process.env.GOT_SOL_SPLITTER_B_PUBLIC_KEY),
+  devA: new PublicKey(process.env.GOT_SOL_DEV_A_PUBLIC_KEY),
+  devB: new PublicKey(process.env.GOT_SOL_DEV_B_PUBLIC_KEY),
+};
 
 const endpoint = clusterApiUrl(config.solanaCluster);
 const connection = new Connection(endpoint, "confirmed");
@@ -39,7 +54,8 @@ const splUtils = new SplUtils(connection);
 const transactionService = new TransactionService(
   connection,
   splUtils,
-  operator
+  operator,
+  splitters
 );
 const transactionController = new TransactionController(
   config,
