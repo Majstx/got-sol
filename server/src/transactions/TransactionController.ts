@@ -1,8 +1,5 @@
 import { Request } from "express";
-import {
-  SplitPayDetailsDto,
-  TransactionService,
-} from "../services/TransactionService";
+import { SplitPayDetailsDto, TransactionService } from "./TransactionService";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { Config } from "../config";
 

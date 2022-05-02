@@ -6,11 +6,11 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 import { join } from "path";
-import { TransactionController } from "./controllers/TransactionController";
-import { TransactionService } from "./services/TransactionService";
+import { TransactionController } from "./transactions/TransactionController";
+import { TransactionService } from "./transactions/TransactionService";
 import { Config } from "./config";
 import bs58 from "bs58";
-import { SplUtils } from "./services/SplUtils";
+import { SplUtils } from "./transactions/SplUtils";
 
 require("dotenv").config();
 
