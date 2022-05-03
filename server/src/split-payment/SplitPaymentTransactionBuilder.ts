@@ -1,4 +1,9 @@
-import { PublicKey, TransactionInstruction } from "@solana/web3.js";
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import {
   Account,
   createAssociatedTokenAccountInstruction,
@@ -6,6 +11,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { SplUtils } from "./SplUtils";
+import { TransactionFactory } from "./TransactionFactory";
 
 const PAYMENT_FEE = 0.01;
 const SPLITTER_SHARE = 0.4;
@@ -18,46 +24,55 @@ type Part = {
   isMerchant: boolean;
 };
 
-export class SplitPaymentBuilder {
+export class SplitPaymentTransactionBuilder {
   private readonly parts: Part[] = [];
   private readonly fee: number;
   private decimals: number;
-  private feePayer: PublicKey;
+  private feePayer: Keypair;
   private splToken: PublicKey;
   private sender: PublicKey;
   private senderATA: PublicKey;
   private senderAccount: Account;
 
   private constructor(
+    private readonly transactionFactory: TransactionFactory,
     private readonly splUtils: SplUtils,
     private readonly amount: number
   ) {
     this.fee = Math.floor(amount * PAYMENT_FEE);
   }
 
-  static init(splUtils: SplUtils, amount): SplitPaymentBuilder {
-    return new SplitPaymentBuilder(splUtils, amount);
+  static init(
+    transactionFactory: TransactionFactory,
+    splUtils: SplUtils,
+    amount
+  ): SplitPaymentTransactionBuilder {
+    return new SplitPaymentTransactionBuilder(
+      transactionFactory,
+      splUtils,
+      amount
+    );
   }
 
-  addMerchant(receiver: PublicKey): SplitPaymentBuilder {
+  addMerchant(receiver: PublicKey): SplitPaymentTransactionBuilder {
     const amount = this.amount - this.fee;
     this.addPart(receiver, amount, true);
     return this;
   }
 
-  addDev(receiver: PublicKey): SplitPaymentBuilder {
+  addDev(receiver: PublicKey): SplitPaymentTransactionBuilder {
     const amount = Math.floor(this.fee * DEV_SHARE);
     this.addPart(receiver, amount);
     return this;
   }
 
-  addSplitter(receiver: PublicKey): SplitPaymentBuilder {
+  addSplitter(receiver: PublicKey): SplitPaymentTransactionBuilder {
     const amount = Math.floor(this.fee * SPLITTER_SHARE);
     this.addPart(receiver, amount);
     return this;
   }
 
-  addOperator(receiver: PublicKey): SplitPaymentBuilder {
+  addOperator(receiver: PublicKey): SplitPaymentTransactionBuilder {
     const amount = Math.floor(this.fee * OPERATOR_SHARE);
     this.addPart(receiver, amount);
     return this;
@@ -68,7 +83,7 @@ export class SplitPaymentBuilder {
     return this;
   }
 
-  setFeePayer(feePayer: PublicKey) {
+  setFeePayer(feePayer: Keypair) {
     this.feePayer = feePayer;
     return this;
   }
@@ -83,7 +98,7 @@ export class SplitPaymentBuilder {
     return this;
   }
 
-  async build(): Promise<TransactionInstruction[]> {
+  async build(): Promise<Transaction> {
     const sum = this.parts
       .map(({ amount }) => amount)
       .reduce((acc, val) => acc + val);
@@ -98,6 +113,14 @@ export class SplitPaymentBuilder {
       merchant.amount += leftover;
     }
 
+    await this.loadSenderAccounts();
+
+    const instructions = await this.getInstructions();
+
+    return this.transactionFactory.make(this.feePayer, instructions);
+  }
+
+  private async loadSenderAccounts() {
     this.senderATA = await this.splUtils.getAssociatedTokenAddress(
       this.splToken,
       this.sender
@@ -109,7 +132,9 @@ export class SplitPaymentBuilder {
     if (this.amount > this.senderAccount.amount) {
       throw new Error("insufficient funds");
     }
+  }
 
+  private async getInstructions() {
     const instructionGroups = await Promise.all(
       this.parts.map(({ to, amount }) => {
         return this.transferTo(to, amount);
@@ -159,7 +184,7 @@ export class SplitPaymentBuilder {
     ata: PublicKey
   ): TransactionInstruction {
     return createAssociatedTokenAccountInstruction(
-      this.feePayer,
+      this.feePayer.publicKey,
       ata,
       owner,
       this.splToken,

@@ -6,11 +6,12 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 import { join } from "path";
-import { TransactionController } from "./transactions/TransactionController";
-import { TransactionService } from "./transactions/TransactionService";
+import { SplitPaymentController } from "./split-payment/SplitPaymentController";
+import { SplitPaymentService } from "./split-payment/SplitPaymentService";
 import { Config } from "./config";
 import bs58 from "bs58";
-import { SplUtils } from "./transactions/SplUtils";
+import { SplUtils } from "./split-payment/SplUtils";
+import { TransactionFactory } from "./split-payment/TransactionFactory";
 
 require("dotenv").config();
 
@@ -50,14 +51,16 @@ const splitters = {
 
 const endpoint = clusterApiUrl(config.solanaCluster);
 const connection = new Connection(endpoint, "confirmed");
+const transactionFactory = new TransactionFactory(connection);
 const splUtils = new SplUtils(connection);
-const transactionService = new TransactionService(
+const transactionService = new SplitPaymentService(
   connection,
+  transactionFactory,
   splUtils,
   operator,
   splitters
 );
-const transactionController = new TransactionController(
+const transactionController = new SplitPaymentController(
   config,
   transactionService
 );
@@ -69,7 +72,7 @@ app.get("/logo", (req, res) => {
 
 app.get(
   "/transaction",
-  asyncRoute(transactionController.meta.bind(transactionController))
+  asyncRoute(transactionController.requestMeta.bind(transactionController))
 );
 
 app.post(

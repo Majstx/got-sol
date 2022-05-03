@@ -1,13 +1,8 @@
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getMint } from "@solana/spl-token";
-import { SplitPaymentBuilder } from "./SplitPaymentBuilder";
+import { SplitPaymentTransactionBuilder } from "./SplitPaymentTransactionBuilder";
 import { SplUtils } from "./SplUtils";
+import { TransactionFactory } from "./TransactionFactory";
 
 type Splitters = {
   operator: PublicKey;
@@ -24,15 +19,16 @@ export type SplitPayDetailsDto = {
   splToken: PublicKey;
 };
 
-export class TransactionService {
+export class SplitPaymentService {
   constructor(
     private readonly connection: Connection,
+    private readonly transactionFactory: TransactionFactory,
     private readonly splUtils: SplUtils,
     private readonly feePayer: Keypair,
     private readonly splitters: Splitters
   ) {}
 
-  async createSplitPayTx({
+  async createTransaction({
     amount,
     sender,
     recipient,
@@ -44,9 +40,13 @@ export class TransactionService {
 
     const tokens = amount * Math.pow(10, mint.decimals);
 
-    const instructions = await SplitPaymentBuilder.init(this.splUtils, tokens)
+    return await SplitPaymentTransactionBuilder.init(
+      this.transactionFactory,
+      this.splUtils,
+      tokens
+    )
       .setSplToken(splToken)
-      .setFeePayer(this.feePayer.publicKey)
+      .setFeePayer(this.feePayer)
       .setSender(sender)
       .setDecimals(mint.decimals)
       .addMerchant(recipient)
@@ -56,22 +56,5 @@ export class TransactionService {
       .addSplitter(this.splitters.splitterB)
       .addOperator(this.splitters.operator)
       .build();
-
-    return this.createTransaction(instructions);
-  }
-
-  private async createTransaction(
-    instructions: TransactionInstruction[]
-  ): Promise<Transaction> {
-    const { blockhash } = await this.connection.getLatestBlockhash("finalized");
-
-    const tx = new Transaction({
-      feePayer: this.feePayer.publicKey,
-      recentBlockhash: blockhash,
-    });
-    instructions.forEach((ix) => tx.add(ix));
-    tx.partialSign(this.feePayer);
-
-    return tx;
   }
 }
