@@ -1,22 +1,23 @@
 import { Request } from "express";
 import { SplitPayDetailsDto, SplitPaymentService } from "./SplitPaymentService";
 import { PublicKey, Transaction } from "@solana/web3.js";
-import { Config } from "../config";
+import { inject, injectable } from "tsyringe";
 
 const serializationConfig = {
   verifySignatures: false,
   requireAllSignatures: false,
 };
 
+@injectable()
 export class SplitPaymentController {
   constructor(
-    private readonly config: Config,
+    @inject(SplitPaymentService)
     private readonly splitPaymentService: SplitPaymentService
   ) {}
 
   requestMeta(req: Request) {
     const label = req.query.label || "transaction";
-    const icon = `https://${req.headers.host}/logo`;
+    const icon = `https://${req.headers.host}/resources/logo.jpeg`;
 
     return {
       label,

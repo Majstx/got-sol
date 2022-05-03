@@ -4,9 +4,11 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
+import { inject, injectable } from "tsyringe";
 
+@injectable()
 export class TransactionFactory {
-  constructor(private readonly connection: Connection) {}
+  constructor(@inject(Connection) private readonly connection: Connection) {}
 
   async make(
     feePayer: Keypair,

@@ -3,14 +3,8 @@ import { getMint } from "@solana/spl-token";
 import { SplitPaymentTransactionBuilder } from "./SplitPaymentTransactionBuilder";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
-
-type Splitters = {
-  operator: PublicKey;
-  splitterA: PublicKey;
-  splitterB: PublicKey;
-  devA: PublicKey;
-  devB: PublicKey;
-};
+import { inject, injectable } from "tsyringe";
+import { Splitters } from "./Splitters";
 
 export type SplitPayDetailsDto = {
   amount: number;
@@ -19,13 +13,15 @@ export type SplitPayDetailsDto = {
   splToken: PublicKey;
 };
 
+@injectable()
 export class SplitPaymentService {
   constructor(
-    private readonly connection: Connection,
+    @inject(Connection) private readonly connection: Connection,
+    @inject(TransactionFactory)
     private readonly transactionFactory: TransactionFactory,
-    private readonly splUtils: SplUtils,
-    private readonly feePayer: Keypair,
-    private readonly splitters: Splitters
+    @inject(SplUtils) private readonly splUtils: SplUtils,
+    @inject("Operator") private readonly feePayer: Keypair,
+    @inject("Splitters") private readonly splitters: Splitters
   ) {}
 
   async createTransaction({

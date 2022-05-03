@@ -4,9 +4,11 @@ import {
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { inject, injectable } from "tsyringe";
 
+@injectable()
 export class SplUtils {
-  constructor(private readonly connection: Connection) {}
+  constructor(@inject(Connection) private readonly connection: Connection) {}
 
   getAssociatedTokenAddress(splToken, owner): Promise<PublicKey> {
     return getAssociatedTokenAddress(splToken, owner);
