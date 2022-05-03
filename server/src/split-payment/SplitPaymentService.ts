@@ -3,7 +3,7 @@ import { getMint } from "@solana/spl-token";
 import { SplitPaymentTransactionBuilder } from "./SplitPaymentTransactionBuilder";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
-import { inject, injectable } from "tsyringe";
+import { container, inject, injectable } from "tsyringe";
 import { Splitters } from "./Splitters";
 
 export type SplitPayDetailsDto = {
@@ -35,12 +35,10 @@ export class SplitPaymentService {
     if (!mint.isInitialized) throw new Error("mint not initialized");
 
     const tokens = amount * Math.pow(10, mint.decimals);
+    const builder = container.resolve(SplitPaymentTransactionBuilder);
 
-    return await SplitPaymentTransactionBuilder.init(
-      this.transactionFactory,
-      this.splUtils,
-      tokens
-    )
+    return builder
+      .setAmount(tokens)
       .setSplToken(splToken)
       .setFeePayer(this.feePayer)
       .setSender(sender)

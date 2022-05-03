@@ -12,6 +12,7 @@ import {
 } from "@solana/spl-token";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
+import { inject, injectable } from "tsyringe";
 
 const PAYMENT_FEE = 0.01;
 const SPLITTER_SHARE = 0.4;
@@ -24,9 +25,12 @@ type Part = {
   isMerchant: boolean;
 };
 
+@injectable()
 export class SplitPaymentTransactionBuilder {
   private readonly parts: Part[] = [];
-  private readonly fee: number;
+
+  private amount: number;
+  private fee: number;
   private decimals: number;
   private feePayer: Keypair;
   private splToken: PublicKey;
@@ -34,24 +38,16 @@ export class SplitPaymentTransactionBuilder {
   private senderATA: PublicKey;
   private senderAccount: Account;
 
-  private constructor(
+  constructor(
+    @inject(TransactionFactory)
     private readonly transactionFactory: TransactionFactory,
-    private readonly splUtils: SplUtils,
-    private readonly amount: number
-  ) {
-    this.fee = Math.floor(amount * PAYMENT_FEE);
-  }
+    @inject(SplUtils) private readonly splUtils: SplUtils
+  ) {}
 
-  static init(
-    transactionFactory: TransactionFactory,
-    splUtils: SplUtils,
-    amount
-  ): SplitPaymentTransactionBuilder {
-    return new SplitPaymentTransactionBuilder(
-      transactionFactory,
-      splUtils,
-      amount
-    );
+  setAmount(amount: number): SplitPaymentTransactionBuilder {
+    this.amount = amount;
+    this.fee = Math.floor(amount * PAYMENT_FEE);
+    return this;
   }
 
   addMerchant(receiver: PublicKey): SplitPaymentTransactionBuilder {
@@ -99,6 +95,10 @@ export class SplitPaymentTransactionBuilder {
   }
 
   async build(): Promise<Transaction> {
+    if (!this.amount) {
+      throw new Error("invalid amount");
+    }
+
     const sum = this.parts
       .map(({ amount }) => amount)
       .reduce((acc, val) => acc + val);
