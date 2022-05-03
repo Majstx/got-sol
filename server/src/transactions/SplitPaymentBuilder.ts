@@ -15,6 +15,7 @@ const OPERATOR_SHARE = 0.1;
 type Part = {
   to: PublicKey;
   amount: number;
+  isMerchant: boolean;
 };
 
 export class SplitPaymentBuilder {
@@ -40,7 +41,7 @@ export class SplitPaymentBuilder {
 
   addMerchant(receiver: PublicKey): SplitPaymentBuilder {
     const amount = this.amount - this.fee;
-    this.addPart(receiver, amount);
+    this.addPart(receiver, amount, true);
     return this;
   }
 
@@ -91,6 +92,12 @@ export class SplitPaymentBuilder {
       throw new Error("the sum of parts cannot be greater than the total");
     }
 
+    if (sum < this.amount) {
+      const leftover = this.amount - sum;
+      const merchant = this.parts.find((p) => p.isMerchant);
+      merchant.amount += leftover;
+    }
+
     this.senderATA = await this.splUtils.getAssociatedTokenAddress(
       this.splToken,
       this.sender
@@ -112,10 +119,11 @@ export class SplitPaymentBuilder {
     return instructionGroups.reduce((ixs, group) => ixs.concat(group));
   }
 
-  private addPart(receiver: PublicKey, amount: number) {
+  private addPart(receiver: PublicKey, amount: number, isMerchant = false) {
     this.parts.push({
       to: receiver,
       amount,
+      isMerchant,
     });
   }
 
