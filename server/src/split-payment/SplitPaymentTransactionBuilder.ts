@@ -4,12 +4,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import {
-  Account,
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { Account } from "@solana/spl-token";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
 import { inject, injectable } from "tsyringe";
@@ -101,7 +96,7 @@ export class SplitPaymentTransactionBuilder {
 
     const sum = this.parts
       .map(({ amount }) => amount)
-      .reduce((acc, val) => acc + val);
+      .reduce((acc, val) => acc + val, 0);
 
     if (sum > this.amount) {
       throw new Error("the sum of parts cannot be greater than the total");
@@ -164,11 +159,18 @@ export class SplitPaymentTransactionBuilder {
     );
     const recipientAccount = await this.splUtils.getAccount(recipientATA);
     if (!recipientAccount) {
-      instructions.push(this.createTokenAccount(recipient, recipientATA));
+      instructions.push(
+        this.splUtils.createTokenAccount(
+          this.feePayer.publicKey,
+          recipientATA,
+          recipient,
+          this.splToken
+        )
+      );
     }
 
     return instructions.concat(
-      createTransferCheckedInstruction(
+      this.splUtils.createTransferCheckedInstruction(
         this.senderATA,
         this.splToken,
         recipientATA,
@@ -176,19 +178,6 @@ export class SplitPaymentTransactionBuilder {
         amount,
         this.decimals
       )
-    );
-  }
-
-  private createTokenAccount(
-    owner: PublicKey,
-    ata: PublicKey
-  ): TransactionInstruction {
-    return createAssociatedTokenAccountInstruction(
-      this.feePayer.publicKey,
-      ata,
-      owner,
-      this.splToken,
-      TOKEN_PROGRAM_ID
     );
   }
 }

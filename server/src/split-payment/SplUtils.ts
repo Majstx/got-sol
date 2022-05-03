@@ -1,9 +1,12 @@
 import {
   Account,
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { inject, injectable } from "tsyringe";
 
 @injectable()
@@ -20,5 +23,38 @@ export class SplUtils {
     } catch (err) {
       return null;
     }
+  }
+
+  createTokenAccount(
+    payer: PublicKey,
+    associatedToken: PublicKey,
+    owner: PublicKey,
+    mint: PublicKey
+  ): TransactionInstruction {
+    return createAssociatedTokenAccountInstruction(
+      payer,
+      associatedToken,
+      owner,
+      mint,
+      TOKEN_PROGRAM_ID
+    );
+  }
+
+  createTransferCheckedInstruction(
+    source: PublicKey,
+    mint: PublicKey,
+    destination: PublicKey,
+    owner: PublicKey,
+    amount: number,
+    decimals: number
+  ) {
+    return createTransferCheckedInstruction(
+      source,
+      mint,
+      destination,
+      owner,
+      amount,
+      decimals
+    );
   }
 }
