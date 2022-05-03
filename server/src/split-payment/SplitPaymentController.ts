@@ -8,6 +8,16 @@ const serializationConfig = {
   requireAllSignatures: false,
 };
 
+type TransactionRequestMeta = {
+  label: string;
+  icon: string;
+};
+
+type TransactionResponse = {
+  transaction: string;
+  message?: string;
+};
+
 @injectable()
 export class SplitPaymentController {
   constructor(
@@ -15,8 +25,8 @@ export class SplitPaymentController {
     private readonly splitPaymentService: SplitPaymentService
   ) {}
 
-  requestMeta(req: Request) {
-    const label = req.query.label || "transaction";
+  requestMeta(req: Request): TransactionRequestMeta {
+    const label = String(req.query.label) || "transaction";
     const icon = `https://${req.headers.host}/resources/logo.jpeg`;
 
     return {
@@ -25,7 +35,7 @@ export class SplitPaymentController {
     };
   }
 
-  async splitPay(req: Request) {
+  async splitPay(req: Request): Promise<TransactionResponse> {
     console.log(new Date(), { ...req.query, ...req.body });
 
     const paymentRequest: SplitPayDetailsDto = {
