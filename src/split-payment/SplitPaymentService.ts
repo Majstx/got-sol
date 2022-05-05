@@ -7,6 +7,7 @@ import { container, inject, injectable } from "tsyringe";
 import { Splitters } from "./Splitters";
 
 export type SplitPayDetailsDto = {
+  id: number;
   amount: number;
   sender: PublicKey;
   recipient: PublicKey;
@@ -25,6 +26,7 @@ export class SplitPaymentService {
   ) {}
 
   async createTransaction({
+    id,
     amount,
     sender,
     recipient,
@@ -38,6 +40,7 @@ export class SplitPaymentService {
     const builder = container.resolve(SplitPaymentTransactionBuilder);
 
     return builder
+      .setId(id)
       .setAmount(tokens)
       .setSplToken(splToken)
       .setFeePayer(this.feePayer)

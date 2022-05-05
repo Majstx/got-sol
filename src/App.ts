@@ -5,9 +5,8 @@ import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { Config } from "./config";
 import bs58 from "bs58";
 import { Splitters } from "./split-payment/Splitters";
-import { TransactionFactory } from "./split-payment/TransactionFactory";
-import { SplUtils } from "./split-payment/SplUtils";
 import path from "path";
+import { createLogger, format, Logger, transports } from "winston";
 
 export class App {
   constructor(
@@ -35,6 +34,15 @@ export class App {
       devB: new PublicKey(config.devBPubKey),
     };
     this.container.register("Splitters", { useValue: splitters });
+
+    const logger: Logger = createLogger({
+      transports: [
+        new transports.Console({
+          format: format.combine(format.timestamp(), format.simple()),
+        }),
+      ],
+    });
+    this.container.register("Logger", { useValue: logger });
   }
 
   registerRoutes() {

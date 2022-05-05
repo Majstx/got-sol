@@ -2,6 +2,7 @@ import { Request } from "express";
 import { SplitPayDetailsDto, SplitPaymentService } from "./SplitPaymentService";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { inject, injectable } from "tsyringe";
+import { Logger } from "winston";
 
 const serializationConfig = {
   verifySignatures: false,
@@ -22,7 +23,8 @@ type TransactionResponse = {
 export class SplitPaymentController {
   constructor(
     @inject(SplitPaymentService)
-    private readonly splitPaymentService: SplitPaymentService
+    private readonly splitPaymentService: SplitPaymentService,
+    @inject("Logger") private readonly logger: Logger
   ) {}
 
   requestMeta(req: Request): TransactionRequestMeta {
@@ -36,14 +38,16 @@ export class SplitPaymentController {
   }
 
   async splitPay(req: Request): Promise<TransactionResponse> {
-    console.log(new Date(), { ...req.query, ...req.body });
-
     const paymentRequest: SplitPayDetailsDto = {
+      id: Date.now(),
       amount: Number(req.query.amount),
       sender: new PublicKey(req.body?.account),
       recipient: new PublicKey(req.query.recipient),
       splToken: new PublicKey(req.query["spl-token"]),
     };
+
+    this.logger.info("new tx", paymentRequest);
+
     let tx = await this.splitPaymentService.createTransaction(paymentRequest);
 
     // Serialize and deserialize the transaction. This ensures consistent ordering of the account keys for signing.

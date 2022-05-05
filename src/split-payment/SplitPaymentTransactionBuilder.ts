@@ -8,6 +8,7 @@ import { Account } from "@solana/spl-token";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
 import { inject, injectable } from "tsyringe";
+import { Logger } from "winston";
 
 const PAYMENT_FEE = 0.01;
 const SPLITTER_SHARE = 0.4;
@@ -32,12 +33,19 @@ export class SplitPaymentTransactionBuilder {
   private sender: PublicKey;
   private senderATA: PublicKey;
   private senderAccount: Account;
+  private id: number;
 
   constructor(
     @inject(TransactionFactory)
     private readonly transactionFactory: TransactionFactory,
-    @inject(SplUtils) private readonly splUtils: SplUtils
+    @inject(SplUtils) private readonly splUtils: SplUtils,
+    @inject("Logger") private readonly logger: Logger
   ) {}
+
+  setId(id: number): SplitPaymentTransactionBuilder {
+    this.id = id;
+    return this;
+  }
 
   setAmount(amount: number): SplitPaymentTransactionBuilder {
     this.amount = amount;
@@ -107,6 +115,13 @@ export class SplitPaymentTransactionBuilder {
       const merchant = this.parts.find((p) => p.isMerchant);
       merchant.amount += leftover;
     }
+
+    this.logger.info("split", {
+      id: this.id,
+      parts: this.parts.map(({ to, amount }) => {
+        return { to: to.toString(), amount };
+      }),
+    });
 
     await this.loadSenderAccounts();
 
