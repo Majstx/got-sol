@@ -155,6 +155,13 @@ export class SplitPaymentTransactionBuilder {
   }
 
   private addPart(receiver: PublicKey, amount: number, isMerchant = false) {
+    if (amount < 1) {
+      this.logger.warn("part is less than 1, skipping...", {
+        to: receiver.toString(),
+      });
+      return;
+    }
+
     this.parts.push({
       to: receiver,
       amount,

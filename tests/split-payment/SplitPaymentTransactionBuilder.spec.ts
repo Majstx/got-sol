@@ -12,6 +12,7 @@ import { SplUtils } from "../../src/split-payment/SplUtils";
 import { expect } from "chai";
 import { Account } from "@solana/spl-token";
 import { assert, createSandbox } from "sinon";
+import { Logger } from "winston";
 
 describe("SplitPaymentTransactionBuilder", () => {
   const sandbox = createSandbox();
@@ -23,6 +24,10 @@ describe("SplitPaymentTransactionBuilder", () => {
   const stubGetAssociatedTokenAddress = sandbox.stub();
   const stubGetAccount = sandbox.stub();
   const stubMakeTransaction = sandbox.stub();
+  const logger = {
+    info: sandbox.stub(),
+    warn: sandbox.stub(),
+  };
 
   class MockTransactionFactory extends TransactionFactory {
     constructor() {
@@ -115,7 +120,8 @@ describe("SplitPaymentTransactionBuilder", () => {
 
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
     const tx = await builder
       .setAmount(tokens)
@@ -200,7 +206,8 @@ describe("SplitPaymentTransactionBuilder", () => {
   it("invalid amount", async () => {
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
 
     try {
@@ -214,7 +221,8 @@ describe("SplitPaymentTransactionBuilder", () => {
   it("the sum of parts cannot be greater than the total", async () => {
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
 
     try {
@@ -231,12 +239,40 @@ describe("SplitPaymentTransactionBuilder", () => {
     }
   });
 
+  it("amounts that are less than 1 should be ignored", async () => {
+    stubGetAssociatedTokenAddress.resolves(senderAta);
+    stubGetAccount.resolves(senderAccount);
+
+    const builder = new SplitPaymentTransactionBuilder(
+      transactionFactory,
+      splUtils,
+      logger as any as Logger
+    );
+
+    await builder
+      .setAmount(5)
+      .setSender(sender)
+      .addMerchant(recipient)
+      .addDev(devA)
+      .build();
+
+    assert.calledWithExactly(logger.warn, "part is less than 1, skipping...", {
+      to: devA.toString(),
+    });
+
+    const {
+      args: [, [ix]],
+    } = stubMakeTransaction.firstCall;
+    expect(ix.amount).to.eq(5);
+  });
+
   it("insufficient funds", async () => {
     stubGetAccount.resolves({ amount: 10 });
 
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
 
     try {
@@ -253,7 +289,8 @@ describe("SplitPaymentTransactionBuilder", () => {
 
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
 
     await builder
@@ -279,7 +316,8 @@ describe("SplitPaymentTransactionBuilder", () => {
 
     const builder = new SplitPaymentTransactionBuilder(
       transactionFactory,
-      splUtils
+      splUtils,
+      logger as any as Logger
     );
 
     await builder
