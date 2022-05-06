@@ -52,6 +52,6 @@ export class App {
     );
 
     const splitPaymentRouter = this.container.resolve(SplitPaymentRouter);
-    this.server.use("/transaction", splitPaymentRouter.register());
+    this.server.use("/tx", splitPaymentRouter.register());
   }
 }
