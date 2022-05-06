@@ -1,10 +1,11 @@
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
-import { getMint } from "@solana/spl-token";
+import { getMint, Mint } from "@solana/spl-token";
 import { SplitPaymentTransactionBuilder } from "./SplitPaymentTransactionBuilder";
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
 import { container, inject, injectable } from "tsyringe";
 import { Splitters } from "./Splitters";
+import LRUCache from "lru-cache";
 
 export type SplitPayDetailsDto = {
   id: number;
@@ -16,6 +17,8 @@ export type SplitPayDetailsDto = {
 
 @injectable()
 export class SplitPaymentService {
+  private readonly cacheMint: LRUCache<string, Mint>;
+
   constructor(
     @inject(Connection) private readonly connection: Connection,
     @inject(TransactionFactory)
@@ -23,7 +26,9 @@ export class SplitPaymentService {
     @inject(SplUtils) private readonly splUtils: SplUtils,
     @inject("Operator") private readonly feePayer: Keypair,
     @inject("Splitters") private readonly splitters: Splitters
-  ) {}
+  ) {
+    this.cacheMint = new LRUCache({ max: 5 });
+  }
 
   async createTransaction({
     id,
@@ -32,9 +37,7 @@ export class SplitPaymentService {
     recipient,
     splToken,
   }: SplitPayDetailsDto): Promise<Transaction> {
-    // Check that the token provided is an initialized mint
-    const mint = await getMint(this.connection, splToken);
-    if (!mint.isInitialized) throw new Error("mint not initialized");
+    const mint = await this.getMint(splToken);
 
     const tokens = amount * Math.pow(10, mint.decimals);
     const builder = container.resolve(SplitPaymentTransactionBuilder);
@@ -53,5 +56,19 @@ export class SplitPaymentService {
       .addSplitter(this.splitters.splitterB)
       .addOperator(this.splitters.operator)
       .build();
+  }
+
+  private async getMint(splToken: PublicKey): Promise<Mint> {
+    const key = splToken.toString();
+    if (this.cacheMint.has(key)) {
+      return this.cacheMint.get(key);
+    }
+
+    // Check that the token provided is an initialized mint
+    const mint = await getMint(this.connection, splToken);
+    if (!mint.isInitialized) throw new Error("mint not initialized");
+    this.cacheMint.set(key, mint);
+
+    return mint;
   }
 }
