@@ -4,9 +4,10 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { inject, injectable } from "tsyringe";
+import { inject, injectable, singleton } from "tsyringe";
 
 @injectable()
+@singleton()
 export class TransactionFactory {
   constructor(@inject(Connection) private readonly connection: Connection) {}
 
