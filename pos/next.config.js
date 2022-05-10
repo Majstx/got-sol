@@ -2,6 +2,15 @@
 const nextConfig = {
     trailingSlash: true,
     reactStrictMode: true,
+    exportPathMap: () => {
+        return {
+            '/': { page: '/new' },
+            '/new': { page: '/new' },
+            '/confirmed': { page: '/confirmed' },
+            '/pending': { page: '/pending' },
+            '/transactions': { page: '/transactions' },
+        };
+    },
     async redirects() {
         return [
             {

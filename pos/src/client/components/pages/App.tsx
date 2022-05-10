@@ -7,17 +7,16 @@ import { PublicKey } from '@solana/web3.js';
 import { AppContext, AppProps as NextAppProps, default as NextApp } from 'next/app';
 import { AppInitialProps } from 'next/dist/shared/lib/utils';
 import { FC, useMemo } from 'react';
-import { DEVNET_ENDPOINT } from '../../utils/constants';
 import { ConfigProvider } from '../contexts/ConfigProvider';
 import { FullscreenProvider } from '../contexts/FullscreenProvider';
 import { PaymentProvider } from '../contexts/PaymentProvider';
 import { ThemeProvider } from '../contexts/ThemeProvider';
 import { TransactionsProvider } from '../contexts/TransactionsProvider';
 import { SolanaPayLogo } from '../images/SolanaPayLogo';
-import { SOLIcon } from '../images/SOLIcon';
 import css from './App.module.css';
 import { MAINNET_ENDPOINT, MAINNET_USDC_MINT } from '../../utils/constants';
 import { USDCIcon } from '../images/USDCIcon';
+import { useRouter } from 'next/router';
 
 interface AppProps extends NextAppProps {
     host: string;
@@ -28,14 +27,27 @@ interface AppProps extends NextAppProps {
     };
 }
 
+const getRouteParams = () => {
+    const { query, basePath } = useRouter();
+    const req = basePath ? new URL(basePath) : null;
+    const recipient = query.recipient as string;
+    const label = query.label as string;
+    const message = (query.message as string) || undefined;
+    const host = req?.host || 'localhost:3000';
+
+    return {
+        query: { recipient, label, message },
+        host,
+    };
+};
+
 const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<AppInitialProps> } = ({
     Component,
-    host,
-    query,
     pageProps,
 }) => {
-    const baseURL = `https://${host}`;
-    const backendURL = `https://api.gotsol.store/tx/`
+    const { host, query } = getRouteParams();
+    const baseURL = `http://${host}`;
+    const backendURL = `https://api.gotsol.store/tx/`;
 
     // const baseURL = `https://api.gotsol.store`;
 
@@ -94,7 +106,6 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                 ) : (
                     <div className={css.logo}>
                         <SolanaPayLogo width={240} height={88} />
-                    
                     </div>
                 )}
             </FullscreenProvider>
@@ -103,19 +114,7 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
 };
 
 App.getInitialProps = async (appContext) => {
-    const props = await NextApp.getInitialProps(appContext);
-
-    const { query, req } = appContext.ctx;
-    const recipient = query.recipient as string;
-    const label = query.label as string;
-    const message = query.message || undefined;
-    const host = req?.headers.host || 'localhost:3001';
-
-    return {
-        ...props,
-        query: { recipient, label, message },
-        host,
-    };
+    return await NextApp.getInitialProps(appContext);
 };
 
 export default App;
