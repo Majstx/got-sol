@@ -5,7 +5,6 @@ import {
     findReference,
     FindReferenceError,
     parseURL,
-    validateTransfer,
     ValidateTransferError,
 } from '@solana/pay';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
@@ -16,6 +15,7 @@ import { useConfig } from '../../hooks/useConfig';
 import { useNavigateWithQuery } from '../../hooks/useNavigateWithQuery';
 import { PaymentContext, PaymentStatus } from '../../hooks/usePayment';
 import { Confirmations } from '../../types';
+import { validateTransfer } from '../../utils/validateTransfer';
 
 export interface PaymentProviderProps {
     children: ReactNode;
