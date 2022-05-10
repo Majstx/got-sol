@@ -43,6 +43,7 @@ export class SplitPaymentController {
       amount: Number(req.query.amount),
       sender: new PublicKey(req.body?.account),
       recipient: new PublicKey(req.query.recipient),
+      reference: new PublicKey(req.query.reference),
       splToken: new PublicKey(req.query["spl-token"]),
     };
 
