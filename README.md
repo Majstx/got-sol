@@ -35,7 +35,7 @@ curl "https://api.gotsol.store/tx?amount=0.5&label=label&recipient=AbUV7m5KCcfYW
 Get transaction:
 
 ```shell
-curl --location --request POST 'https://api.gotsol.store/tx?amount=0.5&recipient=AbUV7m5KCcfYWM1sC9TMVZyPnXSBFTHS8QnKLwdJFj3x&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' \
+curl --location --request POST 'https://api.gotsol.store/tx?amount=0.5&recipient=AbUV7m5KCcfYWM1sC9TMVZyPnXSBFTHS8QnKLwdJFj3x&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&reference=BS2tfQjTxzCyDEf4oJVLqMGvqGTRbKbW3UYFtspnPZGi' \
 --header 'Content-Type: application/json' \
 --data-raw '{"account":"AorQX7369GgwrTLqANpfrS83GmdDTa8o2WJZyCfUbFji"}'
 ```
