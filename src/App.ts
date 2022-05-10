@@ -47,8 +47,13 @@ export class App {
 
   registerRoutes() {
     this.server.use(
+      "/",
+      express.static(path.join(process.cwd(), "pos", "out"))
+    );
+
+    this.server.use(
       "/resources",
-      express.static(path.join(__dirname, "resources"))
+      express.static(path.join(process.cwd(), "resources"))
     );
 
     const splitPaymentRouter = this.container.resolve(SplitPaymentRouter);
