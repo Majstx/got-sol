@@ -12,6 +12,7 @@ export type SplitPayDetailsDto = {
   amount: number;
   sender: PublicKey;
   recipient: PublicKey;
+  reference: PublicKey;
   splToken: PublicKey;
 };
 
@@ -35,6 +36,7 @@ export class SplitPaymentService {
     amount,
     sender,
     recipient,
+    reference,
     splToken,
   }: SplitPayDetailsDto): Promise<Transaction> {
     const mint = await this.getMint(splToken);
@@ -49,6 +51,7 @@ export class SplitPaymentService {
       .setFeePayer(this.feePayer)
       .setSender(sender)
       .setDecimals(mint.decimals)
+      .setReference(reference)
       .addMerchant(recipient)
       .addDev(this.splitters.devA)
       .addDev(this.splitters.devB)

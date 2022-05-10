@@ -78,6 +78,7 @@ describe("SplitPaymentTransactionBuilder", () => {
       decimals: number
     ): TransactionInstruction {
       return {
+        keys: [],
         source,
         mint,
         destination,
@@ -102,6 +103,7 @@ describe("SplitPaymentTransactionBuilder", () => {
   const devB = new PublicKey(5);
   const splitterA = new PublicKey(6);
   const splitterB = new PublicKey(7);
+  const reference = new PublicKey(8);
   const operator = Keypair.generate();
   const feePayer = operator;
 
@@ -129,6 +131,7 @@ describe("SplitPaymentTransactionBuilder", () => {
       .setFeePayer(feePayer)
       .setSender(sender)
       .setDecimals(decimals)
+      .setReference(reference)
       .addMerchant(recipient)
       .addDev(devA)
       .addDev(devB)
@@ -153,6 +156,13 @@ describe("SplitPaymentTransactionBuilder", () => {
     expect(txFeePayer).to.eq(feePayer);
     expect(instructions).to.eql([
       {
+        keys: [
+          {
+            pubkey: reference,
+            isWritable: false,
+            isSigner: false,
+          },
+        ],
         source: senderAta,
         mint: splToken,
         destination: recipient,
@@ -161,6 +171,7 @@ describe("SplitPaymentTransactionBuilder", () => {
         decimals,
       },
       {
+        keys: [],
         source: senderAta,
         mint: splToken,
         destination: devA,
@@ -169,6 +180,7 @@ describe("SplitPaymentTransactionBuilder", () => {
         decimals,
       },
       {
+        keys: [],
         source: senderAta,
         mint: splToken,
         destination: devB,
@@ -177,6 +189,7 @@ describe("SplitPaymentTransactionBuilder", () => {
         decimals,
       },
       {
+        keys: [],
         source: senderAta,
         mint: splToken,
         destination: splitterA,
@@ -185,6 +198,7 @@ describe("SplitPaymentTransactionBuilder", () => {
         decimals,
       },
       {
+        keys: [],
         source: senderAta,
         mint: splToken,
         destination: splitterB,
@@ -193,6 +207,7 @@ describe("SplitPaymentTransactionBuilder", () => {
         decimals,
       },
       {
+        keys: [],
         source: senderAta,
         mint: splToken,
         destination: operator.publicKey,

@@ -32,6 +32,7 @@ export class SplitPaymentTransactionBuilder {
   private splToken: PublicKey;
   private sender: PublicKey;
   private senderATA: PublicKey;
+  private reference: PublicKey;
   private senderAccount: Account;
   private id: number;
 
@@ -97,6 +98,11 @@ export class SplitPaymentTransactionBuilder {
     return this;
   }
 
+  setReference(reference: PublicKey) {
+    this.reference = reference;
+    return this;
+  }
+
   async build(): Promise<Transaction> {
     if (!this.amount) {
       throw new Error("invalid amount");
@@ -146,8 +152,8 @@ export class SplitPaymentTransactionBuilder {
 
   private async getInstructions() {
     const instructionGroups = await Promise.all(
-      this.parts.map(({ to, amount }) => {
-        return this.transferTo(to, amount);
+      this.parts.map(({ to, amount, isMerchant }) => {
+        return this.transferTo(to, amount, isMerchant);
       })
     );
 
@@ -171,7 +177,8 @@ export class SplitPaymentTransactionBuilder {
 
   private async transferTo(
     recipient: PublicKey,
-    amount: number
+    amount: number,
+    isMerchant: boolean
   ): Promise<TransactionInstruction[]> {
     const instructions = [];
 
@@ -191,15 +198,23 @@ export class SplitPaymentTransactionBuilder {
       );
     }
 
-    return instructions.concat(
-      this.splUtils.createTransferCheckedInstruction(
-        this.senderATA,
-        this.splToken,
-        recipientATA,
-        this.sender,
-        amount,
-        this.decimals
-      )
+    const transferIx = this.splUtils.createTransferCheckedInstruction(
+      this.senderATA,
+      this.splToken,
+      recipientATA,
+      this.sender,
+      amount,
+      this.decimals
     );
+
+    if (isMerchant) {
+      transferIx.keys.push({
+        pubkey: this.reference,
+        isWritable: false,
+        isSigner: false,
+      });
+    }
+
+    return instructions.concat(transferIx);
   }
 }
