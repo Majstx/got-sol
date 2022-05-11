@@ -27,27 +27,13 @@ interface AppProps extends NextAppProps {
     };
 }
 
-const getRouteParams = () => {
-    const { query, basePath } = useRouter();
-    const req = basePath ? new URL(basePath) : null;
-    const recipient = query.recipient as string;
-    const label = query.label as string;
-    const message = (query.message as string) || undefined;
-    const host = req?.host || 'localhost:3000';
-
-    return {
-        query: { recipient, label, message },
-        host,
-    };
-};
-
 const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<AppInitialProps> } = ({
     Component,
+    host,
     pageProps,
 }) => {
-    const { host, query } = getRouteParams();
     const baseURL = `http://${host}`;
-    const backendURL = `https://api.gotsol.store/tx/`;
+    const backendURL = 'https://api.gotsol.store/tx/';
 
     // const baseURL = `https://api.gotsol.store`;
 
@@ -63,6 +49,8 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
     // const link = undefined;
     // const link = useMemo(() => new URL(`${baseURL}/tx/`), [baseURL]);
     const link = useMemo(() => new URL(backendURL), [backendURL]);
+
+    const { query } = useRouter();
 
     let recipient: PublicKey | undefined = undefined;
     const { recipient: recipientParam, label, message } = query;
@@ -85,9 +73,9 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                                     baseURL={baseURL}
                                     link={link}
                                     recipient={recipient}
-                                    label={label}
+                                    label={label as string}
                                     splToken={MAINNET_USDC_MINT}
-                                    message={message}
+                                    message={message as string}
                                     symbol="USDC"
                                     icon={<USDCIcon />}
                                     decimals={6}
@@ -114,7 +102,15 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
 };
 
 App.getInitialProps = async (appContext) => {
-    return await NextApp.getInitialProps(appContext);
+    const props = await NextApp.getInitialProps(appContext);
+
+    const { req } = appContext.ctx;
+    const host = req?.headers.host || process.env.APP_HOST || 'localhost:3000';
+
+    return {
+        ...props,
+        host,
+    };
 };
 
 export default App;
