@@ -7,7 +7,9 @@
     "start": "node -r ts-node/register src/index.ts",
     "test": "ts-mocha --recursive tests/**/*.spec.ts",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "build:dev": "cd pos && APP_HOST=\"localhost:1337\" APP_BASE_PATH=\"/pos\" npm run build",
+    "build:prod": "cd pos && APP_HOST=\"api.gotsol.store\" APP_BASE_PATH=\"/pos\" npm run build"
   },
   "author": "",
   "license": "ISC",

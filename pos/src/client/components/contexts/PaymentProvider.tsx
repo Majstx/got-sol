@@ -16,6 +16,7 @@ import { useNavigateWithQuery } from '../../hooks/useNavigateWithQuery';
 import { PaymentContext, PaymentStatus } from '../../hooks/usePayment';
 import { Confirmations } from '../../types';
 import { validateTransfer } from '../../utils/validateTransfer';
+import { useRouter } from 'next/router';
 
 export interface PaymentProviderProps {
     children: ReactNode;
@@ -34,6 +35,9 @@ export const PaymentProvider: FC<PaymentProviderProps> = ({ children }) => {
     const [confirmations, setConfirmations] = useState<Confirmations>(0);
     const navigate = useNavigateWithQuery();
     const progress = useMemo(() => confirmations / requiredConfirmations, [confirmations, requiredConfirmations]);
+
+    const router = useRouter();
+    const getLink = (path: string) => `${router.basePath}${path}`;
 
     const url = useMemo(() => {
         if (link) {
@@ -86,14 +90,14 @@ export const PaymentProvider: FC<PaymentProviderProps> = ({ children }) => {
         setSignature(undefined);
         setStatus(PaymentStatus.New);
         setConfirmations(0);
-        navigate('/new', true);
+        navigate(getLink('/new'), true);
     }, [navigate]);
 
     const generate = useCallback(() => {
         if (status === PaymentStatus.New && !reference) {
             setReference(Keypair.generate().publicKey);
             setStatus(PaymentStatus.Pending);
-            navigate('/pending');
+            navigate(getLink('/pending'));
         }
     }, [status, reference, navigate]);
 
@@ -155,7 +159,7 @@ export const PaymentProvider: FC<PaymentProviderProps> = ({ children }) => {
                     clearInterval(interval);
                     setSignature(signature.signature);
                     setStatus(PaymentStatus.Confirmed);
-                    navigate('/confirmed', true);
+                    navigate(getLink('/confirmed'), true);
                 }
             } catch (error: any) {
                 // If the RPC node doesn't have the transaction signature yet, try again

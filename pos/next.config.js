@@ -2,6 +2,7 @@
 const nextConfig = {
     trailingSlash: true,
     reactStrictMode: true,
+    basePath: process.env.APP_BASE_PATH,
     exportPathMap: () => {
         return {
             '/': { page: '/new' },

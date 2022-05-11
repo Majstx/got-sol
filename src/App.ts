@@ -47,7 +47,7 @@ export class App {
 
   registerRoutes() {
     this.server.use(
-      "/",
+      "/pos",
       express.static(path.join(process.cwd(), "pos", "out"))
     );
 
