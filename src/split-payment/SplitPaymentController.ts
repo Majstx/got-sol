@@ -28,7 +28,9 @@ export class SplitPaymentController {
   ) {}
 
   requestMeta(req: Request): TransactionRequestMeta {
-    const label = String(req.query.label) || "transaction";
+    const label = req.query.label
+      ? decodeURIComponent(req.query.label as string)
+      : "transaction";
     const icon = `https://${req.headers.host}/resources/logo.jpeg`;
 
     return {
