@@ -96,11 +96,6 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                 ) : (
                     <div className={css.logo}>
                         <SolanaPayLogo width={240} height={88} />
-                       <a href='/?label=The Remedy&recipient=5nsavEMHFHXHkxmZBzHkP4dX3FB3K7jhkqMPYPKCs9eV'>
-                           <button className={css.button}>
-                            Collect Payment
-                            </button>
-                           </a> 
 
                            <Link href={{ pathname: '/', query: { label: 'The Remedy', recipient: '5nsavEMHFHXHkxmZBzHkP4dX3FB3K7jhkqMPYPKCs9eV' } }}><a><button className={css.button}>
                             Collect Payment
