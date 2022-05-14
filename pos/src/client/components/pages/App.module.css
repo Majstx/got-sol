@@ -1,6 +1,19 @@
 .logo {
     min-height: 100vh;
-    display: flex;
+    display: grid;
     justify-content: center;
     align-items: center;
+}
+
+.button {
+    background-color: black;
+    padding: 15px 32px;
+    border-radius: 12px;
+    transition-duration: 0.4s;
+    color: white;
+}
+
+.button:hover {
+    background-color: grey;
+    color: black;
 }

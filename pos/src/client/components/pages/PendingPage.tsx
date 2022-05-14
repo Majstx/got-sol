@@ -9,8 +9,12 @@ import { Amount } from '../sections/Amount';
 import { PoweredBy } from '../sections/PoweredBy';
 import { QRCode } from '../sections/QRCode';
 import css from './PendingPage.module.css';
+import { useRouter } from 'next/router';
 
 const PendingPage: NextPage = () => {
+
+    const { query } = useRouter();
+
     const { symbol, connectWallet } = useConfig();
     const { amount, reset } = usePayment();
     const { publicKey } = useWallet();
@@ -30,6 +34,7 @@ const PendingPage: NextPage = () => {
             </div>
             <div className={css.main}>
                 <div className={css.amount}>
+                <h1>{query.label}</h1>
                     <Amount amount={amount} />
                 </div>
                 <div className={css.symbol}>{symbol}</div>

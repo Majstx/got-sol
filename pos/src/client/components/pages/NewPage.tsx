@@ -8,8 +8,11 @@ import { NumPad } from '../sections/NumPad';
 import { PoweredBy } from '../sections/PoweredBy';
 import { Summary } from '../sections/Summary';
 import css from './NewPage.module.css';
+import { useRouter } from 'next/router';
+import Image from 'next/image';
 
-const NewPage: NextPage = () => {
+const NewPage: NextPage = (props) => {
+    const { query } = useRouter();
     const phone = useMediaQuery({ query: '(max-width: 767px)' });
 
     return phone ? (
@@ -39,6 +42,12 @@ const NewPage: NextPage = () => {
                 <div className={css.summary}>
                     <Summary />
                     <GenerateButton />
+                    <div className={css.label}>
+                        <Image alt='logo' src="/favicon.ico" width='100%' height='100%'></Image>
+                        <h1>{query.label}</h1>
+                        <br/>
+                        {query.message}
+                    </div>
                 </div>
                 <div className={css.bottom}>
                     <TransactionsLink />
@@ -54,6 +63,7 @@ export function getServerSideProps() {
     // Required so getInitialProps re-runs on the server-side
     // If it runs on client-side then there's no req and the URL reading doesn't work
     // See https://nextjs.org/docs/api-reference/data-fetching/get-initial-props
+
     return {
         props: {},
     };
