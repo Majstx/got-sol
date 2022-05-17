@@ -1,15 +1,3 @@
-.logo {
-    min-height: 100vh;
-    display: grid;
-    justify-content: center;
-    align-items: center;
-}
-
-.labels {
-    display: grid;
-    grid-gap: 10px;
-}
-
 .root {
     margin: 32px auto;
     padding: 12px 24px;

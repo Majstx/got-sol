@@ -6,10 +6,11 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PublicKey } from '@solana/web3.js';
 import { AppContext, AppProps as NextAppProps, default as NextApp } from 'next/app';
 import { AppInitialProps } from 'next/dist/shared/lib/utils';
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { DEVNET_ENDPOINT } from '../../utils/constants';
 import { ConfigProvider } from '../contexts/ConfigProvider';
 import { FullscreenProvider } from '../contexts/FullscreenProvider';
+import { Input } from '../buttons/Input';
 import { PaymentProvider } from '../contexts/PaymentProvider';
 import { ThemeProvider } from '../contexts/ThemeProvider';
 import { TransactionsProvider } from '../contexts/TransactionsProvider';
@@ -28,6 +29,7 @@ interface AppProps extends NextAppProps {
     };
 }
 
+
 const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<AppInitialProps> } = ({
     Component,
     host,
@@ -35,9 +37,11 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
     pageProps,
 }) => {
     const baseURL = `https://${host}`;
-    const backendURL = `https://api.gotsol.store/tx/`
+    const backendURL = `https://api.gotsol.store/tx/`;
 
-    // const baseURL = `https://api.gotsol.store`;
+    // set label values
+const [labelValue, setLabelValue] = useState<string>('');
+const [recipientValue, setRecipientValue] = useState<string>('');
 
     // If you're testing without a mobile wallet, set this to true to allow a browser wallet to be used.
     const connectWallet = false;
@@ -94,7 +98,19 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                 ) : (
                     <div className={css.logo}>
                         <SolanaPayLogo width={240} height={88} />
-                    
+                        <div className={css.labels}>
+                            <Input
+                                    changeRecipient={(recipient) => setRecipientValue(recipient)}
+                                    changeLabel={(label) => setLabelValue(label)} labelValue={''} recipientValue={''}                            />
+                            <button
+                                className={css.root}
+                                onClick={() => {
+                                    window.location.assign(`?label=${labelValue}&recipient=${recipientValue}`);
+                                }}
+                            >
+                                Go
+                            </button>
+                        </div>
                     </div>
                 )}
             </FullscreenProvider>
