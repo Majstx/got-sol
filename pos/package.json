@@ -22,7 +22,7 @@
         "@solana/wallet-adapter-react": "^0.15.4",
         "@solana/wallet-adapter-react-ui": "^0.9.6",
         "@solana/wallet-adapter-solflare": "^0.6.6",
-        "@solana/web3.js": "^1.36.0",
+        "@solana/web3.js": "^1.41.10",
         "bignumber.js": "^9.0.2",
         "bs58": "^5.0.0",
         "cache-manager": "^3.6.0",
