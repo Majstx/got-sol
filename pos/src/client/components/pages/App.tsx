@@ -6,10 +6,11 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PublicKey } from '@solana/web3.js';
 import { AppContext, AppProps as NextAppProps, default as NextApp } from 'next/app';
 import { AppInitialProps } from 'next/dist/shared/lib/utils';
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { DEVNET_ENDPOINT } from '../../utils/constants';
 import { ConfigProvider } from '../contexts/ConfigProvider';
 import { FullscreenProvider } from '../contexts/FullscreenProvider';
+import { Input } from '../buttons/Input';
 import { PaymentProvider } from '../contexts/PaymentProvider';
 import { ThemeProvider } from '../contexts/ThemeProvider';
 import { TransactionsProvider } from '../contexts/TransactionsProvider';
@@ -35,9 +36,7 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
     pageProps,
 }) => {
     const baseURL = `https://${host}`;
-    const backendURL = `https://api.gotsol.store/tx/`
-
-    // const baseURL = `https://api.gotsol.store`;
+    const backendURL = `https://api.gotsol.store/tx/`;
 
     // If you're testing without a mobile wallet, set this to true to allow a browser wallet to be used.
     const connectWallet = false;
@@ -46,6 +45,10 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
         () => (connectWallet ? [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network })] : []),
         [connectWallet, network]
     );
+
+    // set label values
+    const [labelValue, setLabelValue] = useState('');
+    const [recipientValue, setRecipientValue] = useState('');
 
     // Toggle comments on these lines to use transaction requests instead of transfer requests.
     // const link = undefined;
@@ -94,7 +97,20 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                 ) : (
                     <div className={css.logo}>
                         <SolanaPayLogo width={240} height={88} />
-                    
+                        <div className={css.labels}>
+                            <Input
+                                changeRecipient={(recipient) => setRecipientValue(recipient)}
+                                changeLabel={(label) => setLabelValue(label)}
+                            />
+                            <button
+                                className={css.root}
+                                onClick={() => {
+                                    window.location.assign(`?label=${labelValue}&recipient=${recipientValue}`);
+                                }}
+                            >
+                                Go
+                            </button>
+                        </div>
                     </div>
                 )}
             </FullscreenProvider>
