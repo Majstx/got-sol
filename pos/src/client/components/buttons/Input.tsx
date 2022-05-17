@@ -1,7 +1,13 @@
 import React, { FC, useState } from 'react';
 import css from './Input.module.css';
 
-export const Input: FC = (props) => {
+interface IinputProps {
+    labelValue: string,
+    recipientValue: string,
+    changeLabel: (arg: string) => void
+    changeRecipient: (arg: string) => void
+}
+export const Input: FC<IinputProps>= (props) => {
     return (
         <>
             <input

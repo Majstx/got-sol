@@ -29,6 +29,7 @@ interface AppProps extends NextAppProps {
     };
 }
 
+
 const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<AppInitialProps> } = ({
     Component,
     host,
@@ -38,6 +39,10 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
     const baseURL = `https://${host}`;
     const backendURL = `https://api.gotsol.store/tx/`;
 
+    // set label values
+const [labelValue, setLabelValue] = useState<string>('');
+const [recipientValue, setRecipientValue] = useState<string>('');
+
     // If you're testing without a mobile wallet, set this to true to allow a browser wallet to be used.
     const connectWallet = false;
     const network = WalletAdapterNetwork.Devnet;
@@ -45,10 +50,6 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
         () => (connectWallet ? [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network })] : []),
         [connectWallet, network]
     );
-
-    // set label values
-    const [labelValue, setLabelValue] = useState('');
-    const [recipientValue, setRecipientValue] = useState('');
 
     // Toggle comments on these lines to use transaction requests instead of transfer requests.
     // const link = undefined;
@@ -99,9 +100,8 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
                         <SolanaPayLogo width={240} height={88} />
                         <div className={css.labels}>
                             <Input
-                                changeRecipient={(recipient) => setRecipientValue(recipient)}
-                                changeLabel={(label) => setLabelValue(label)}
-                            />
+                                    changeRecipient={(recipient) => setRecipientValue(recipient)}
+                                    changeLabel={(label) => setLabelValue(label)} labelValue={''} recipientValue={''}                            />
                             <button
                                 className={css.root}
                                 onClick={() => {
