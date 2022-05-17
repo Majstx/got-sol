@@ -20,7 +20,6 @@ export const Input: FC = (props) => {
                 className={css.root}
                 placeholder="Enter Label "
             />
-            
         </>
     );
 };
