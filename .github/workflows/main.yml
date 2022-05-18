@@ -14,4 +14,4 @@ jobs:
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "got-sol" #Must be unique in Heroku
-          heroku_email: "tar-2008.ferraz@hotmail.com"
+          heroku_email: "majestic.advising@gmail.com"
