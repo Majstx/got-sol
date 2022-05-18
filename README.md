@@ -1,4 +1,4 @@
-# Got SOL Digital Financial Transaction System
+# Got SOL Digital Financial Transaction System!
 
 ## Installation instructions
 
