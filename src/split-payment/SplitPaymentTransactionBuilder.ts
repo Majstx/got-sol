@@ -10,6 +10,10 @@ import { TransactionFactory } from "./TransactionFactory";
 import { inject, injectable } from "tsyringe";
 import { Logger } from "winston";
 
+export const MEMO_PROGRAM_ID = new PublicKey(
+  "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+);
+
 const PAYMENT_FEE = 0.01;
 const SPLITTER_SHARE = 0.4;
 const DEV_SHARE = 0.05;
@@ -35,6 +39,7 @@ export class SplitPaymentTransactionBuilder {
   private reference: PublicKey;
   private senderAccount: Account;
   private id: number;
+  private memo: string;
 
   constructor(
     @inject(TransactionFactory)
@@ -103,6 +108,11 @@ export class SplitPaymentTransactionBuilder {
     return this;
   }
 
+  setMemo(memo: string) {
+    this.memo = memo;
+    return this;
+  }
+
   async build(): Promise<Transaction> {
     if (!this.amount) {
       throw new Error("invalid amount");
@@ -131,7 +141,11 @@ export class SplitPaymentTransactionBuilder {
 
     await this.loadSenderAccounts();
 
-    const instructions = await this.getInstructions();
+    const instructions = await this.getTransferInstructions();
+
+    if (this.memo) {
+      instructions.push(this.createMemoIx());
+    }
 
     return this.transactionFactory.make(this.feePayer, instructions);
   }
@@ -150,7 +164,7 @@ export class SplitPaymentTransactionBuilder {
     }
   }
 
-  private async getInstructions() {
+  private async getTransferInstructions() {
     const instructionGroups = await Promise.all(
       this.parts.map(({ to, amount, isMerchant }) => {
         return this.transferTo(to, amount, isMerchant);
@@ -216,5 +230,13 @@ export class SplitPaymentTransactionBuilder {
     }
 
     return instructions.concat(transferIx);
+  }
+
+  private createMemoIx(): TransactionInstruction {
+    return new TransactionInstruction({
+      programId: MEMO_PROGRAM_ID,
+      keys: [],
+      data: Buffer.from(this.memo, "utf8"),
+    });
   }
 }
