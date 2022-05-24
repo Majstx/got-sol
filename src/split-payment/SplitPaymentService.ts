@@ -14,6 +14,7 @@ export type SplitPayDetailsDto = {
   recipient: PublicKey;
   reference: PublicKey;
   splToken: PublicKey;
+  memo: string;
 };
 
 @injectable()
@@ -38,6 +39,7 @@ export class SplitPaymentService {
     recipient,
     reference,
     splToken,
+    memo,
   }: SplitPayDetailsDto): Promise<Transaction> {
     const mint = await this.getMint(splToken);
 
@@ -52,6 +54,7 @@ export class SplitPaymentService {
       .setSender(sender)
       .setDecimals(mint.decimals)
       .setReference(reference)
+      .setMemo(memo)
       .addMerchant(recipient)
       .addDev(this.splitters.devA)
       .addDev(this.splitters.devB)

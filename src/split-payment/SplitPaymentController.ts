@@ -40,6 +40,8 @@ export class SplitPaymentController {
   }
 
   async splitPay(req: Request): Promise<TransactionResponse> {
+    const memo = req.query.memo && decodeURIComponent(req.query.memo as string);
+
     const paymentRequest: SplitPayDetailsDto = {
       id: Date.now(),
       amount: Number(req.query.amount),
@@ -47,6 +49,7 @@ export class SplitPaymentController {
       recipient: new PublicKey(req.query.recipient),
       reference: new PublicKey(req.query.reference),
       splToken: new PublicKey(req.query["spl-token"]),
+      memo,
     };
 
     this.logger.info("new tx", paymentRequest);
