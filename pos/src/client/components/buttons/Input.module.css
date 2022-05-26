@@ -1,6 +1,6 @@
 .root {
-    margin: 32px auto;
-    padding: 12px 24px;
+    margin: 20px auto;
+    padding: 12px 48px;
     border: 0;
     border-radius: 8px;
     font-size: 18px;
@@ -9,6 +9,9 @@
     cursor: pointer;
 }
 
+.label {
+    padding: 0px;
+}
 .root[disabled] {
     cursor: default;
     opacity: 0.5;
