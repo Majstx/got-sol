@@ -25,10 +25,10 @@ interface AppProps extends NextAppProps {
     query: {
         recipient?: string;
         label?: string;
+        memo?: string;
         message?: string;
     };
 }
-
 
 const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<AppInitialProps> } = ({
     Component,
@@ -41,6 +41,7 @@ const App: FC<AppProps> & { getInitialProps(appContext: AppContext): Promise<App
 
     // set label values
 const [labelValue, setLabelValue] = useState<string>('');
+const [memoValue, setMemoValue] = useState<string>('');
 const [recipientValue, setRecipientValue] = useState<string>('');
 
     // If you're testing without a mobile wallet, set this to true to allow a browser wallet to be used.
@@ -57,7 +58,7 @@ const [recipientValue, setRecipientValue] = useState<string>('');
     const link = useMemo(() => new URL(backendURL), [backendURL]);
 
     let recipient: PublicKey | undefined = undefined;
-    const { recipient: recipientParam, label, message } = query;
+    const { recipient: recipientParam, label, message, memo } = query;
     if (recipientParam && label) {
         try {
             recipient = new PublicKey(recipientParam);
@@ -100,12 +101,14 @@ const [recipientValue, setRecipientValue] = useState<string>('');
                         <SolanaPayLogo width={240} height={88} />
                         <div className={css.labels}>
                             <Input
-                                    changeRecipient={(recipient) => setRecipientValue(recipient)}
-                                    changeLabel={(label) => setLabelValue(label)} labelValue={''} recipientValue={''}                            />
+                                    changeRecipient={(recipient) => setRecipientValue(recipient)} recipientValue={''}
+                                    changeLabel={(label) => setLabelValue(label)} labelValue={''} 
+                                    changeMemo={(memo) => setMemoValue(memo)} memoValue={''} 
+                            /> 
                             <button
                                 className={css.root}
                                 onClick={() => {
-                                    window.location.assign(`?label=${labelValue}&recipient=${recipientValue}`);
+                                    window.location.assign(`?label=${labelValue}&recipient=${recipientValue}&memo=${memoValue}`);
                                 }}
                             >
                                 Go
@@ -124,12 +127,13 @@ App.getInitialProps = async (appContext) => {
     const { query, req } = appContext.ctx;
     const recipient = query.recipient as string;
     const label = query.label as string;
+    const memo = query.memo as string;
     const message = query.message || undefined;
     const host = req?.headers.host || 'localhost:3001';
 
     return {
         ...props,
-        query: { recipient, label, message },
+        query: { recipient, label, message, memo },
         host,
     };
 };

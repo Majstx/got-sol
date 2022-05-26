@@ -5,6 +5,7 @@ import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
 import css from './NumPad.module.css';
+import { useRouter } from "next/router";
 
 interface NumPadInputButton {
     input: Digits | '.';
@@ -23,6 +24,8 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
 export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
+
+    const { query } = useRouter();
 
     const [value, setValue] = useState('0');
     const onInput = useCallback(
@@ -46,6 +49,7 @@ export const NumPad: FC = () => {
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
             <div className={css.value}>{value}</div>
+            <div className={css.text}>{query.label}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
