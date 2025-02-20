@@ -14,7 +14,7 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 );
 
-const PAYMENT_FEE = 0.01;
+const PAYMENT_FEE = 0.0125;
 const SPLITTER_SHARE = 0;
 const DEV_SHARE = 0.5;
 const OPERATOR_SHARE = 0.5;
