@@ -15,10 +15,8 @@
     "@solana/spl-token": "^0.2.0",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
-    "@solana/web3.js": "^1.98.0",
     "@types/express": "^4.17.13",
     "@types/lru-cache": "^7.6.1",
-    "@types/react": "^19.0.10",
     "body-parser": "^1.20.0",
     "bs58": "^5.0.0",
     "compression": "^1.7.4",
@@ -29,19 +27,27 @@
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.2",
     "tsyringe": "^4.6.0",
-    "typescript": "^4.9.5",
     "winston": "^3.7.2"
   },
   "devDependencies": {
+    "@solana/pay": "^0.2.5",
+    "@solana/web3.js": "^1.98.0",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.25",
+    "@types/node": "^17.0.45",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "@types/sinon": "^10.0.11",
     "chai": "^4.3.6",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "next": "^15.1.7",
     "prettier": "^2.6.2",
     "qrcode": "^1.5.0",
+    "react-responsive": "^10.0.0",
     "sinon": "^13.0.2",
     "supertest": "^6.2.2",
-    "ts-mocha": "^9.0.2"
+    "ts-mocha": "^9.0.2",
+    "typescript": "^5.7.3"
   }
 }
