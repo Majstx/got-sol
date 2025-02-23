@@ -3,6 +3,7 @@ import { Cluster } from "@solana/web3.js";
 import { Config } from "./config";
 import { App } from "./App";
 import { container } from "tsyringe";
+import { SolanaConnection } from './connection';
 
 require("dotenv").config();
 
@@ -28,6 +29,23 @@ server.use(compression());
 const app = new App(container, server);
 app.registerProviders(config);
 app.registerRoutes();
+
+async function main() {
+    try {
+        // Initialize connection
+        await SolanaConnection.initialize();
+        
+        // Use the connection in your app
+        const connection = SolanaConnection.getConnection();
+        
+        // Your application logic here
+        
+    } catch (error) {
+        console.error("Application error:", error);
+    }
+}
+
+main().catch(console.error);
 
 server.listen(config.port, () => {
   console.log(`App is running on port ${config.port}`);

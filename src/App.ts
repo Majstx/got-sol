@@ -14,12 +14,24 @@ export class App {
     private readonly server: express.Express
   ) {}
 
-  registerProviders(config: Config) {
+  async registerProviders(config: Config) {
     this.container.register("Config", { useValue: config });
 
-    const endpoint = clusterApiUrl(config.solanaCluster);
-    const connection = new Connection(endpoint, "confirmed");
-    this.container.register(Connection, { useValue: connection });
+    try {
+      const connection = new Connection(
+        'https://mainnet.helius-rpc.com/?api-key=af619c05-98c6-4751-b389-a5d28947041d',
+        'confirmed'
+      );
+      
+      // Test the connection
+      const { blockhash } = await connection.getLatestBlockhash();
+      console.log("✅ Connection established with blockhash:", blockhash);
+      
+      this.container.register(Connection, { useValue: connection });
+    } catch (error) {
+      console.error("Failed to register providers:", error);
+      throw error;
+    }
 
     const operator = Keypair.fromSecretKey(
       bs58.decode(config.operatorSecretKey)
