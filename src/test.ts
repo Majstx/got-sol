@@ -1,4 +1,4 @@
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 // Add proper type definitions
 interface ConnectionConfig {
@@ -6,41 +6,53 @@ interface ConnectionConfig {
     confirmTransactionInitialTimeout: number;
 }
 
-async function testConnection() {
-    console.log("🚀 Testing Helius RPC Connection...\n");
-    
-    const HELIUS_URL: string = 'https://mainnet.helius-rpc.com/?api-key=af619c05-98c6-4751-b389-a5d28947041d';
+async function testMainnet() {
+    console.log("🚀 Starting Solana Mainnet Test...\n");
     
     try {
-        const config: ConnectionConfig = {
-            commitment: 'confirmed',
-            confirmTransactionInitialTimeout: 60000
-        };
+        // Create mainnet connection
+        console.log("1️⃣ Connecting to Mainnet...");
+        const connection = new Connection(
+            'https://mainnet.helius-rpc.com/?api-key=af619c05-98c6-4751-b389-a5d28947041d',
+            {
+                commitment: 'confirmed',
+                confirmTransactionInitialTimeout: 60000
+            }
+        );
 
-        const connection = new Connection(HELIUS_URL, config);
-        
-        // Test basic operation
-        console.log("2️⃣ Testing basic operations...");
+        // Test basic connection
+        console.log("2️⃣ Testing connection...");
         const { blockhash } = await connection.getLatestBlockhash();
         console.log("✅ Latest blockhash:", blockhash);
-        
-        // Test slot
+
+        // Get network status
         const slot = await connection.getSlot();
         console.log("✅ Current slot:", slot);
+
+        // Get network version
+        const version = await connection.getVersion();
+        console.log("✅ Solana version:", version["solana-core"]);
+
+        // Test transaction count
+        const blockHeight = await connection.getBlockHeight();
+        console.log("✅ Current block height:", blockHeight);
+
+        console.log("\n🎉 Mainnet connection test successful!");
         
-        console.log("\n🎉 All tests passed successfully!");
-        
-    } catch (error: any) {
-        console.error("\n❌ Connection failed:", error.message);
+    } catch (error) {
+        console.error("\n❌ Mainnet test failed:", error.message);
         console.log("\n🔧 Troubleshooting steps:");
-        console.log("1. Check your internet connection");
-        console.log("2. Verify the RPC endpoint is accessible");
-        console.log("3. Check if you're being rate limited");
+        console.log("1. Check internet connection");
+        console.log("2. Verify RPC endpoint status");
+        console.log("3. Check for rate limiting");
+        console.log("4. Try alternative RPC endpoint");
         process.exit(1);
     }
 }
 
-testConnection().catch((error: Error) => {
-    console.error(error);
-    process.exit(1);
-});
+// Run the mainnet test
+console.log("=====================================");
+console.log("🌟 Solana Mainnet Test Suite 🌟");
+console.log("=====================================\n");
+
+testMainnet().catch(console.error);

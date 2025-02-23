@@ -4,7 +4,7 @@ import { SplitPaymentTransactionBuilder } from "./SplitPaymentTransactionBuilder
 import { SplUtils } from "./SplUtils";
 import { TransactionFactory } from "./TransactionFactory";
 import { container, inject, injectable } from "tsyringe";
-import { Splitters } from "./Splitters";
+import type { Splitters } from "./Splitters";
 import LRUCache from "lru-cache";
 
 export type SplitPayDetailsDto = {
