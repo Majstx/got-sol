@@ -2,49 +2,52 @@ import { FC, useEffect, useState } from 'react';
 import { Connection, PublicKey } from "@solana/web3.js";
 
 const NewPaymentPage: FC = () => {
-    const [status, setStatus] = useState<string>('');
+    const [connection, setConnection] = useState<Connection | null>(null);
     const [error, setError] = useState<string>('');
+    const [status, setStatus] = useState<string>('');
 
     useEffect(() => {
         const endpoints = [
-            'https://mainnet.helius-rpc.com/?api-key=af619c05-98c6-4751-b389-a5d28947041d',
+            'https://solana-mainnet.g.alchemy.com/v2/demo',
             'https://api.mainnet-beta.solana.com',
-            'https://solana-api.projectserum.com'
+            'https://rpc.ankr.com/solana'
         ];
 
-        async function connectToNetwork() {
+        async function tryConnect() {
+            setStatus('Attempting connection...');
             for (const endpoint of endpoints) {
                 try {
-                    const connection = new Connection(endpoint, {
+                    const conn = new Connection(endpoint, {
                         commitment: 'confirmed',
-                        confirmTransactionInitialTimeout: 120000
+                        wsEndpoint: undefined,
+                        confirmTransactionInitialTimeout: 60000
                     });
                     
-                    // Test connection
-                    await connection.getLatestBlockhash();
+                    setStatus(`Testing connection to ${endpoint}...`);
+                    await conn.getLatestBlockhash();
                     console.log('Connected to:', endpoint);
-                    setStatus('Connected to Solana network');
+                    setConnection(conn);
                     setError('');
-                    return connection;
+                    setStatus(`Connected to ${endpoint}`);
+                    return;
                 } catch (err) {
                     console.warn(`Failed to connect to ${endpoint}:`, err);
-                    setError(`Connection failed: ${err.message}`);
+                    setStatus(`Failed to connect to ${endpoint}, trying next...`);
                     continue;
                 }
             }
-            throw new Error('Failed to connect to any RPC endpoint');
+            setError('Failed to connect to any endpoint');
+            setStatus('All connection attempts failed');
         }
 
-        connectToNetwork().catch(err => {
-            setError(`Network error: ${err.message}`);
-            console.error('Network error:', err);
-        });
+        tryConnect();
     }, []);
 
     return (
         <div className="p-4">
-            {status && <p className="text-green-500">{status}</p>}
+            <p className="text-blue-500">{status}</p>
             {error && <p className="text-red-500">{error}</p>}
+            {connection && <p className="text-green-500">Connected to Solana network</p>}
             {/* Your existing payment form */}
         </div>
     );
