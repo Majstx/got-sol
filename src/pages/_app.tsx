@@ -5,9 +5,11 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
 import type { AppProps } from 'next/app';
 import { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 
 // Import styles
 require('@solana/wallet-adapter-react-ui/styles.css');
+require('../styles/globals.css');
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet;
@@ -25,4 +27,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp; 
+export default dynamic(() => Promise.resolve(MyApp), {
+  ssr: false
+}); 
