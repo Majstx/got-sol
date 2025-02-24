@@ -10,14 +10,9 @@ import { useMemo } from 'react';
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 function MyApp({ Component, pageProps }: AppProps) {
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(WalletAdapterNetwork.Mainnet), []);
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-    ],
-    []
-  );
+  const network = WalletAdapterNetwork.Mainnet;
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
