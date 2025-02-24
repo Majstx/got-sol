@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
-import { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { createTransferCheckedInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from '@solana/wallet-adapter-react';
 
 // USDC token mint address on mainnet
@@ -16,9 +16,11 @@ const NewPaymentPage: FC = () => {
         const endpoint = 'https://api.mainnet-beta.solana.com';
         const conn = new Connection(endpoint);
         setConnection(conn);
+        console.log('Connection established');
     }, []);
 
     const handlePayment = async (amount: number) => {
+        console.log('Starting payment process...');
         if (!connection || !publicKey || !signTransaction) {
             setError('Please connect your wallet first');
             return;
@@ -34,23 +36,27 @@ const NewPaymentPage: FC = () => {
             }
 
             const recipient = new PublicKey(recipientAddress);
+            console.log('Recipient:', recipient.toBase58());
 
             // Get token accounts
             const senderATA = await getAssociatedTokenAddress(USDC_MINT, publicKey);
             const recipientATA = await getAssociatedTokenAddress(USDC_MINT, recipient);
+            console.log('Token accounts retrieved');
 
             // Amount in USDC (6 decimals)
-            const transferAmount = amount * 1_000_000;
+            const transferAmount = BigInt(amount * 1_000_000);
 
-            // Create transfer instruction
-            const transferIx = createTransferInstruction(
+            // Create transfer instruction with amount checking
+            const transferIx = createTransferCheckedInstruction(
                 senderATA,
+                USDC_MINT,
                 recipientATA,
                 publicKey,
                 transferAmount,
-                [],
-                TOKEN_PROGRAM_ID
+                6 // USDC decimals
             );
+
+            console.log('Transfer instruction created');
 
             const { blockhash } = await connection.getLatestBlockhash();
             const transaction = new Transaction().add(transferIx);
@@ -58,11 +64,14 @@ const NewPaymentPage: FC = () => {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
 
+            console.log('Transaction built, requesting signature...');
             const signed = await signTransaction(transaction);
+            console.log('Transaction signed');
+            
             const txid = await connection.sendRawTransaction(signed.serialize());
+            console.log('Transaction sent:', txid);
             
             setStatus(`USDC Transaction sent: ${txid}`);
-            console.log('USDC Payment sent:', txid);
         } catch (err) {
             console.error('USDC Payment failed:', err);
             setError(err.message);
