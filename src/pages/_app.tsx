@@ -13,7 +13,8 @@ require('../styles/globals.css');
 
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => 
+    "https://solana-mainnet.g.alchemy.com/v2/auyEX2SJHVi3Jv4QOOYpIw4kk5LyVdls", []);
   const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
 
   return (
